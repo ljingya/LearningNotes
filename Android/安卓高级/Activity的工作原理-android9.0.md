@@ -1074,6 +1074,79 @@
         }
     ```
 
+31. ZygoteProcess的start方法
+
+    该方法的第一个参数是哪个类的main方法会运行，也就是上面传的ActivityThread。然后通过ZygoteProcess会fork出一个新进程。
+
+    ```
+     private Process.ProcessStartResult startViaZygote(final String processClass,
+                                                          final String niceName,
+                                                          final int uid, final int gid,
+                                                          final int[] gids,
+                                                          int runtimeFlags, int mountExternal,
+                                                          int targetSdkVersion,
+                                                          String seInfo,
+                                                          String abi,
+                                                          String instructionSet,
+                                                          String appDataDir,
+                                                          String invokeWith,
+                                                          boolean startChildZygote,
+                                                          String[] extraArgs)
+                                                          throws ZygoteStartFailedEx {
+     synchronized(mLock) {
+                return zygoteSendArgsAndGetResult(openZygoteSocketIfNeeded(abi), argsForZygote);
+            } 
+      }                                                    
+    ```
+
+    openZygoteSocketIfNeeded方法：
+
+    该方法内会连接socket，并与fork出的进程通信。
+
+    ```
+       /**
+         * Tries to open socket to Zygote process if not already open. If
+         * already open, does nothing.  May block and retry.  Requires that mLock be held.
+         */
+        @GuardedBy("mLock")
+        private ZygoteState openZygoteSocketIfNeeded(String abi) throws ZygoteStartFailedEx {
+            Preconditions.checkState(Thread.holdsLock(mLock), "ZygoteProcess lock not held");
+    
+            if (primaryZygoteState == null || primaryZygoteState.isClosed()) {
+                try {
+                    primaryZygoteState = ZygoteState.connect(mSocket);
+                } catch (IOException ioe) {
+                    throw new ZygoteStartFailedEx("Error connecting to primary zygote", ioe);
+                }
+                maybeSetApiBlacklistExemptions(primaryZygoteState, false);
+                maybeSetHiddenApiAccessLogSampleRate(primaryZygoteState);
+            }
+            if (primaryZygoteState.matches(abi)) {
+                return primaryZygoteState;
+            }
+    
+            // The primary zygote didn't match. Try the secondary.
+            if (secondaryZygoteState == null || secondaryZygoteState.isClosed()) {
+                try {
+                    secondaryZygoteState = ZygoteState.connect(mSecondarySocket);
+                } catch (IOException ioe) {
+                    throw new ZygoteStartFailedEx("Error connecting to secondary zygote", ioe);
+                }
+                maybeSetApiBlacklistExemptions(secondaryZygoteState, false);
+                maybeSetHiddenApiAccessLogSampleRate(secondaryZygoteState);
+            }
+    
+            if (secondaryZygoteState.matches(abi)) {
+                return secondaryZygoteState;
+            }
+    
+            throw new ZygoteStartFailedEx("Unsupported zygote ABI: " + abi);
+        }
+    ```
+
+
+
+
 
 
 

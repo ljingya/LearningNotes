@@ -1,30 +1,30 @@
 #### Activity的工作原理-android9.0
 
-1. ###### startActivityForResult 方法
+1. ##### startActivityForResult 方法
 
-当开启一个页面的时候需要调用Activity的startActivity的方法。最终调用到了其内部的 startActivityForResult 方法。在 startActivityForResult 方法中 execStartActivity 方法的第二个参数mMainThread.getApplicationThread() ，mMainThread是 ActivityThread的实例，mMainThread.getApplicationThread() 返回 ApplicationThread ，ApplicationThread继承了  IApplicationThread.Stub，说明 ApplicationThread 是ActivityThread的一个内部的Binder 类。
+   当开启一个页面的时候需要调用Activity的startActivity的方法。最终调用到了其内部的 startActivityForResult 方法。在 startActivityForResult 方法中 execStartActivity 方法的第二个参数mMainThread.getApplicationThread() ，mMainThread是 ActivityThread的实例，mMainThread.getApplicationThread() 返回 ApplicationThread ，ApplicationThread继承了  IApplicationThread.Stub，说明 ApplicationThread 是ActivityThread的一个内部的Binder 类。
 
-```java
- public void startActivityForResult(@RequiresPermission Intent intent, int requestCode,
-            @Nullable Bundle options) {
-        if (mParent == null) {
-            ...
-            Instrumentation.ActivityResult ar =
-                mInstrumentation.execStartActivity(
-                    this, mMainThread.getApplicationThread(), mToken, this,
-                    intent, requestCode, options);
-            ....
-        } else {
-            if (options != null) {
-                mParent.startActivityFromChild(this, intent, requestCode, options);
-            } else {
-                // Note we want to go through this method for compatibility with
-                // existing applications that may have overridden it.
-                mParent.startActivityFromChild(this, intent, requestCode);
-            }
-        }
-    }
-```
+   ```
+   public void startActivityForResult(@RequiresPermission Intent intent, int requestCode,
+               @Nullable Bundle options) {
+           if (mParent == null) {
+               ...
+               Instrumentation.ActivityResult ar =
+                   mInstrumentation.execStartActivity(
+                       this, mMainThread.getApplicationThread(), mToken, this,
+                       intent, requestCode, options);
+               ....
+           } else {
+               if (options != null) {
+                   mParent.startActivityFromChild(this, intent, requestCode, options);
+               } else {
+                   // Note we want to go through this method for compatibility with
+                   // existing applications that may have overridden it.
+                   mParent.startActivityFromChild(this, intent, requestCode);
+               }
+           }
+       }
+   ```
 
 2. ###### 执行 Instrumentation 的 execStartActivity 的方法。
 
@@ -124,7 +124,7 @@
        }
    ```
 
-3. ActivityManagerService的startActivity
+3. ##### ActivityManagerService的startActivity
 
    执行ActivityManagerService中的startActivity，最终会调用 startActivityAsCaller，在这个方法内，通过ActivityStartController的 obtainStarter方法获取到 ActivityStarter,用过ActivityStarter设置执行需要的值，代码如下：
 
@@ -271,7 +271,7 @@
        }
    ```
 
-4. ###### ActivityStackSupervisor的resumeFocusedStackTopActivityLocked()
+4. ##### ActivityStackSupervisor的resumeFocusedStackTopActivityLocked()
 
    resumeFocusedStackTopActivityLocked方法内部最终会调用ActivityStack的resumeTopActivityUncheckedLocked（）方法。
 
@@ -304,7 +304,7 @@
        }
    ```
 
-5. ActivityStack的resumeTopActivityUncheckedLocked（）
+5. ##### ActivityStack的resumeTopActivityUncheckedLocked（）
 
    resumeTopActivityUncheckedLocked方法内部调用了resumeTopActivityInnerLocked，在resumeTopActivityInnerLocked方法内部会判断是否有处在onResume状态的Activity,若有先调用startPausingLocked改变Activity的状态。接着调用ActivityStackSupervisor 的startSpecificActivityLocked方法
 
@@ -323,7 +323,7 @@
 
    ##### Activity的暂停
 
-6. 分析startPausingLocked方法
+6. ##### 分析startPausingLocked方法
 
    在 startPausingLocked方法内部 调用AMS的 getLifecycleManager()获取到ClientLifecycleManager，该类是客户端生命周期的管理类，接着调用ClientLifecycleManager的 scheduleTransaction方法，该方法的第二个参数 传递了PauseActivityItem，该参数是Activity对应的onPause状态的类，继承自 ActivityLifecycleItem。
 
@@ -357,7 +357,7 @@
          }      
    ```
 
-7. ClientLifecycleManager的scheduleTransaction方法
+7. ##### ClientLifecycleManager的scheduleTransaction方法
 
    该方法调用 最终调用 ClientTransaction的schedule方法。
 
@@ -382,7 +382,7 @@
        }    
    ```
 
-8. ClientTransaction的schedule
+8. ##### ClientTransaction的schedule
 
    该方法中，mClient是IApplicationThread的对象，由于 IApplicationThread是一个Binder类型的对象，它的实现是ActivityThread中的 ApplicationThread，最终调用的是 ApplicationThread的 scheduleTransaction
 
@@ -392,7 +392,7 @@
        }
    ```
 
-9. ApplicationThread的 scheduleTransaction
+9. ##### ApplicationThread的 scheduleTransaction
 
    该方法中，调用ActivityThread的scheduleTransaction，由于ActivityThread中并未实现该方法因此，具体实现在其ClientTransactionHandler类中
 
@@ -403,7 +403,7 @@
            }
    ```
 
-10. ClientTransactionHandler的scheduleTransaction
+10. ##### ClientTransactionHandler的scheduleTransaction
 
     在该方法调用sendMessage方法，由于sendMessage是抽象的所以具体实现是在ActivityThread中
 
@@ -414,7 +414,7 @@
         }
     ```
 
-11. ActivityThread的sendMessage
+11. ##### ActivityThread的sendMessage
 
     在实现的sendMessage中，最终通过mH即内部的H继承的Handler发送消息，最终调用handleMessage方法。
 
@@ -455,7 +455,7 @@
                         break;
     ```
 
-12. TransactionExecutor的execute
+12. ##### TransactionExecutor的execute
 
     该方法中调用executeCallbacks和executeLifecycleState方法。
 
@@ -517,7 +517,7 @@
         }
     ```
 
-13. PauseActivityItem中的execute方法
+13. ##### PauseActivityItem中的execute方法
 
     该方法中调用   client.handlePauseActivity方法，client是ClientTransactionHandler。由于ClientTransactionHandler中的handlePauseActivity是一个抽象方法，因此需要查看ActivityThread的handlePauseActivity。
 
@@ -532,7 +532,7 @@
         }
     ```
 
-14. ActivityThread的handlePauseActivity
+14. ##### ActivityThread的handlePauseActivity
 
     在该方法中调用了performPauseActivity方法。然后调用performPauseActivityIfNeeded方法，在performPauseActivityIfNeeded方法中调用了mInstrumentation.callActivityOnPause(r.activity)的方法。
 
@@ -558,7 +558,7 @@
         }
     ```
 
-15. Instrumentation的callActivityOnPaus
+15. ##### Instrumentation的callActivityOnPause
 
     最终调用activity.performPause();
 
@@ -568,7 +568,7 @@
         }
     ```
 
-16. Activity的performPause
+16. ##### Activity的performPause
 
     在performPause方法中最终调用了 onPause()方法。
 
@@ -586,7 +586,7 @@
 
 在上一个Activity状态变成暂停之后，会调用ActivityStackSupervisor的startSpecificActivityLocked方法继续执行Activity启动的流程。
 
-17. ActivityStackSupervisor 的startSpecificActivityLocked
+17. ##### ActivityStackSupervisor 的startSpecificActivityLocked
 
     在该方法中，会判断application是否已经启动，若启动调用realStartActivityLocked，若未启动调用AMS的startProcessLocked方法。
 
@@ -662,7 +662,7 @@
     	}
     ```
 
-18. ClientLifecycleManager的scheduleTransaction
+18. ##### ClientLifecycleManager的scheduleTransaction
 
     与暂停的逻辑处理基本一致,调用ClientTransaction的schedule方法
 
@@ -679,7 +679,7 @@
         }
     ```
 
-19. ClientTransaction的schedule
+19. ##### ClientTransaction的schedule
 
     在该方法中，mClient是IApplicationThread，IApplicationThread是一个Binder类型的类，具体实现是ActivityThread中的ApplicationThread，执行ApplicationThread的scheduleTransaction
 
@@ -689,7 +689,7 @@
         }
     ```
 
-20. ApplicationThread的scheduleTransaction
+20. ##### ApplicationThread的scheduleTransaction
 
     在该方法中执行了 ActivityThread中的scheduleTransaction，由于ActivityThread中并未实现该方法，所以具体的实现是在父类ClientTransactionHandler中，执行ClientTransactionHandler的scheduleTransaction方法。
 
@@ -700,7 +700,7 @@
             }
     ```
 
-21. ClientTransactionHandler的scheduleTransaction
+21. ##### ClientTransactionHandler的scheduleTransaction
 
     该方法中调用了内部的抽象方法sendMessage，ActivityThread.H是Activity内部的一个Handler类，Activity的状态都由该Handler处理。然后执行ClientTransactionHandler的子类中的sendMessage的具体实现。
 
@@ -711,7 +711,7 @@
         }
     ```
 
-22. ActivityThread的sendMessage
+22. ##### ActivityThread的sendMessage
 
     该方法最终调用它的重载方法，然后在重载方法中调用 mH.sendMessage(msg);mH是ActivityThread的Handler类。调用handler的sendMessage之后，具体的处理在mH（Handler）的handleMessage方法
 
@@ -733,7 +733,7 @@
     
     ```
 
-23. mH（Handler）的handleMessage方法
+23. ##### mH（Handler）的handleMessage方法
 
     执行EXECUTE_TRANSACTION状态的方法，最终执行TransactionExecutor的execute(transaction)的方法。
 
@@ -751,7 +751,7 @@
                         break;
     ```
 
-24. TransactionExecutor的execute方法
+24. ##### TransactionExecutor的execute方法
 
     在方法内，最终执行executeLifecycleState(transaction)，执行生命周期状态方法。
 
@@ -797,7 +797,7 @@
         }
     ```
 
-25. LaunchActivityItem的execute
+25. ##### LaunchActivityItem的execute
 
     在该方法内部调用client.handleLaunchActivity方法。client是ClientTransactionHandler的对象，ClientTransactionHandler是一个抽象类，handleLaunchActivity方法具体的实现是在ActviityThread类中。
 
@@ -815,7 +815,7 @@
         }
     ```
 
-26. ActviityThread的handleLaunchActivity
+26. ##### ActviityThread的handleLaunchActivity
 
     在方法中，调用performLaunchActivity方法
 
@@ -967,7 +967,7 @@
         }
     ```
 
-27. Instrumentation的callActivityOnCreate方法
+27. ##### Instrumentation的callActivityOnCreate方法
 
     在该方法中调用Activity的performCreate(icicle)方法
 
@@ -979,7 +979,7 @@
         }
     ```
 
-28. Activity的performCreate
+28. ##### Activity的performCreate
 
     该方法最终调用了它的重载方法，在重载方法中调用onCreate。
 
@@ -1015,7 +1015,7 @@
                 "activity", r.intent.getComponent(), false, false, true);
 ```
 
-29. AMS的startProcessLocked
+29. ##### AMS的startProcessLocked
 
     在该方法中会执行开启进程的操作，并有一个变量设置为entryPoint = "android.app.ActivityThread"。接着调用 startProcessLocked方法
 
@@ -1052,7 +1052,7 @@
                             new String[] {PROC_START_SEQ_IDENT + app.startSeq});
     ```
 
-30. Process的start
+30. ##### Process的start
 
     在Process的方法中会调用ZygoteProcess进程的start方法，
 
@@ -1074,9 +1074,9 @@
         }
     ```
 
-31. ZygoteProcess的start方法
+31. ##### ZygoteProcess的start方法
 
-    该方法的第一个参数是哪个类的main方法会运行，也就是上面传的ActivityThread。然后通过ZygoteProcess会fork出一个新进程。
+    该方法的第一个参数是哪个类的main方法会运行，也就是上面传的字符串android.app.ActivityThread即ActivityThread类的main方法。然后通过ZygoteProcess会fork出一个新进程。
 
     ```
      private Process.ProcessStartResult startViaZygote(final String processClass,
@@ -1143,6 +1143,218 @@
             throw new ZygoteStartFailedEx("Unsupported zygote ABI: " + abi);
         }
     ```
+
+32. ##### ActivityThread的main方法
+
+    main方法中创建Looper,Handler消息对列MessageQueue并调用Looper.loop()开启消息循环。并且调用ActivityThread的attach方法。
+
+    ```
+     public static void main(String[] args) {
+           ... 
+    
+            Looper.prepareMainLooper();
+    
+            ActivityThread thread = new ActivityThread();
+            thread.attach(false, startSeq);
+    
+            if (sMainThreadHandler == null) {
+                sMainThreadHandler = thread.getHandler();
+            }
+    
+            if (false) {
+                Looper.myLooper().setMessageLogging(new
+                        LogPrinter(Log.DEBUG, "ActivityThread"));
+            }
+    
+            // End of event ActivityThreadMain.
+            Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+            Looper.loop();
+    
+            throw new RuntimeException("Main thread loop unexpectedly exited");
+        }
+    ```
+
+33. ##### ActivityThread的attach
+
+    在该方法中调用IActivityManager的attachApplication方法即调用AMS的attachApplication，绑定application，然后设置垃圾回收器。
+
+    ```
+    private void attach(boolean system, long startSeq) {
+            sCurrentActivityThread = this;
+            mSystemThread = system;
+            if (!system) {
+                ViewRootImpl.addFirstDrawHandler(new Runnable() {
+                    @Override
+                    public void run() {
+                        ensureJitEnabled();
+                    }
+                });
+                android.ddm.DdmHandleAppName.setAppName("<pre-initialized>",
+                                                        UserHandle.myUserId());
+                RuntimeInit.setApplicationObject(mAppThread.asBinder());
+                final IActivityManager mgr = ActivityManager.getService();
+                try {
+                    mgr.attachApplication(mAppThread, startSeq);
+                } catch (RemoteException ex) {
+                    throw ex.rethrowFromSystemServer();
+                }
+                // Watch for getting close to heap limit.
+                BinderInternal.addGcWatcher(new Runnable() {
+                    @Override public void run() {
+                        if (!mSomeActivitiesChanged) {
+                            return;
+                        }
+                        Runtime runtime = Runtime.getRuntime();
+                        long dalvikMax = runtime.maxMemory();
+                        long dalvikUsed = runtime.totalMemory() - runtime.freeMemory();
+                        if (dalvikUsed > ((3*dalvikMax)/4)) {
+                            if (DEBUG_MEMORY_TRIM) Slog.d(TAG, "Dalvik max=" + (dalvikMax/1024)
+                                    + " total=" + (runtime.totalMemory()/1024)
+                                    + " used=" + (dalvikUsed/1024));
+                            mSomeActivitiesChanged = false;
+                            try {
+                                mgr.releaseSomeActivities(mAppThread);
+                            } catch (RemoteException e) {
+                                throw e.rethrowFromSystemServer();
+                            }
+                        }
+                    }
+                });
+            } else {
+                // Don't set application object here -- if the system crashes,
+                // we can't display an alert, we just want to die die die.
+                android.ddm.DdmHandleAppName.setAppName("system_process",
+                        UserHandle.myUserId());
+                try {
+                    mInstrumentation = new Instrumentation();
+                    mInstrumentation.basicInit(this);
+                    ContextImpl context = ContextImpl.createAppContext(
+                            this, getSystemContext().mPackageInfo);
+                    mInitialApplication = context.mPackageInfo.makeApplication(true, null);
+                    mInitialApplication.onCreate();
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            "Unable to instantiate Application():" + e.toString(), e);
+                }
+            }
+    
+            // add dropbox logging to libcore
+            DropBox.setReporter(new DropBoxReporter());
+    
+            ViewRootImpl.ConfigChangedCallback configChangedCallback
+                    = (Configuration globalConfig) -> {
+                synchronized (mResourcesManager) {
+                    // We need to apply this change to the resources immediately, because upon returning
+                    // the view hierarchy will be informed about it.
+                    if (mResourcesManager.applyConfigurationToResourcesLocked(globalConfig,
+                            null /* compat */)) {
+                        updateLocaleListFromAppContext(mInitialApplication.getApplicationContext(),
+                                mResourcesManager.getConfiguration().getLocales());
+    
+                        // This actually changed the resources! Tell everyone about it.
+                        if (mPendingConfiguration == null
+                                || mPendingConfiguration.isOtherSeqNewer(globalConfig)) {
+                            mPendingConfiguration = globalConfig;
+                            sendMessage(H.CONFIGURATION_CHANGED, globalConfig);
+                        }
+                    }
+                }
+            };
+            ViewRootImpl.addConfigCallback(configChangedCallback);
+        }
+    ```
+
+34. ##### AMS的attachApplication
+
+     attachApplication方法调用attachApplicationLocked方法，
+
+    ```
+       @Override
+        public final void attachApplication(IApplicationThread thread, long startSeq) {
+            synchronized (this) {
+                int callingPid = Binder.getCallingPid();
+                final int callingUid = Binder.getCallingUid();
+                final long origId = Binder.clearCallingIdentity();
+                attachApplicationLocked(thread, callingPid, callingUid, startSeq);
+                Binder.restoreCallingIdentity(origId);
+            }
+        }
+    ```
+
+    attachApplicationLocked方法,该方法会调用ActivityStackSupervisor的attachApplicationLocked方法
+
+    ```
+    @GuardedBy("this")
+        private final boolean attachApplicationLocked(IApplicationThread thread,
+                int pid, int callingUid, long startSeq) {
+                ...
+                  // See if the top visible activity is waiting to run in this process...
+            if (normalMode) {
+                try {
+                    if (mStackSupervisor.attachApplicationLocked(app)) {
+                        didSomething = true;
+                    }
+                } catch (Exception e) {
+                    Slog.wtf(TAG, "Exception thrown launching activities in " + app, e);
+                    badApp = true;
+                }
+            }
+                ...
+                }
+    ```
+
+35. ##### ActivityStackSupervisor的attachApplicationLocked
+
+    该方法内会调用realStartActivityLocked方法，通过方法名字知道Activity的启动应该在这个方法内。
+
+    ```
+    boolean attachApplicationLocked(ProcessRecord app) throws RemoteException {
+          ....
+                                if (realStartActivityLocked(activity, app,
+                                        top == activity /* andResume */, true /* checkConfig */)) {
+                                    didSomething = true;
+                                }
+         ...
+            return didSomething;
+        }
+    ```
+
+    realStartActivityLocked方法内又找到跟应用启动条件下相同的Activity的代码。创建LaunchActivityItem的Activity的启动对象，并通过AMS获取ClientLifecycleManager对象，并执行ClientLifecycleManager的scheduleTransaction方法。后续的流程已经在上面的在应用启动的条件下Activity的启动流程中分析过了。
+
+    ```
+    final boolean realStartActivityLocked(ActivityRecord r, ProcessRecord app,
+                boolean andResume, boolean checkConfig) throws RemoteException {
+                ...
+                  // Create activity launch transaction.
+                    final ClientTransaction clientTransaction = ClientTransaction.obtain(app.thread,
+                            r.appToken);
+                    clientTransaction.addCallback(LaunchActivityItem.obtain(new Intent(r.intent),
+                            System.identityHashCode(r), r.info,
+                            // TODO: Have this take the merged configuration instead of separate global
+                            // and override configs.
+                            mergedConfiguration.getGlobalConfiguration(),
+                            mergedConfiguration.getOverrideConfiguration(), r.compat,
+                            r.launchedFromPackage, task.voiceInteractor, app.repProcState, r.icicle,
+                            r.persistentState, results, newIntents, mService.isNextTransitionForward(),
+                            profilerInfo));
+    
+                    // Set desired final state.
+                    final ActivityLifecycleItem lifecycleItem;
+                    if (andResume) {
+                        lifecycleItem = ResumeActivityItem.obtain(mService.isNextTransitionForward());
+                    } else {
+                        lifecycleItem = PauseActivityItem.obtain();
+                    }
+                    clientTransaction.setLifecycleStateRequest(lifecycleItem);
+    
+                    // Schedule transaction.
+                    mService.getLifecycleManager().scheduleTransaction(clientTransaction);
+               .....
+               }
+    ```
+
+
+
 
 
 

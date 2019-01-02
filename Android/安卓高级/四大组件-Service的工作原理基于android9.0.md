@@ -344,3 +344,238 @@ public boolean bindService(Intent service, ServiceConnection conn,
     return bindServiceCommon(service, conn, flags, mMainThread.getHandler(), getUser());
 }
 ```
+
+- bindServiceCommon方法
+
+  在该方法内判断ServiceConnection是否为null，然后通过ActivityManager.getService()获取ActivityManagerService，调用ActivityManagerService的bindService。
+
+  ```
+  private boolean bindServiceCommon(Intent service, ServiceConnection conn, int flags, Handler
+              handler, UserHandle user) {
+          // Keep this in sync with DevicePolicyManager.bindDeviceAdminServiceAsUser.
+          IServiceConnection sd;
+          if (conn == null) {
+              throw new IllegalArgumentException("connection is null");
+          }
+          if (mPackageInfo != null) {
+              sd = mPackageInfo.getServiceDispatcher(conn, getOuterContext(), handler, flags);
+          } else {
+              throw new RuntimeException("Not supported in system context");
+          }
+          validateServiceIntent(service);
+          try {
+              IBinder token = getActivityToken();
+              if (token == null && (flags&BIND_AUTO_CREATE) == 0 && mPackageInfo != null
+                      && mPackageInfo.getApplicationInfo().targetSdkVersion
+                      < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                  flags |= BIND_WAIVE_PRIORITY;
+              }
+              service.prepareToLeaveProcess(this);
+              int res = ActivityManager.getService().bindService(
+                  mMainThread.getApplicationThread(), getActivityToken(), service,
+                  service.resolveTypeIfNeeded(getContentResolver()),
+                  sd, flags, getOpPackageName(), user.getIdentifier());
+              if (res < 0) {
+                  throw new SecurityException(
+                          "Not allowed to bind to service " + service);
+              }
+              return res != 0;
+          } catch (RemoteException e) {
+              throw e.rethrowFromSystemServer();
+          }
+      }
+  ```
+
+- ActivityManagerService的bindService
+
+  在该代码中内部调用了ActiveServices的bindServiceLocked方法。	
+
+  ```
+  public int bindService(IApplicationThread caller, IBinder token, Intent service,
+              String resolvedType, IServiceConnection connection, int flags, String callingPackage,
+              int userId) throws TransactionTooLargeException {
+          enforceNotIsolatedCaller("bindService");
+  
+          // Refuse possible leaked file descriptors
+          if (service != null && service.hasFileDescriptors() == true) {
+              throw new IllegalArgumentException("File descriptors passed in Intent");
+          }
+  
+          if (callingPackage == null) {
+              throw new IllegalArgumentException("callingPackage cannot be null");
+          }
+  
+          synchronized(this) {
+              return mServices.bindServiceLocked(caller, token, service,
+                      resolvedType, connection, flags, callingPackage, userId);
+          }
+      }
+  ```
+
+- ActiveServices的bindServiceLocked
+
+  在该方法内又这样一段注释，当Service已经运行时我们可以直接连接，这段代码即是binderService的逻辑
+
+  然后调用requestServiceBindingLocked方法。
+
+  ```
+  int bindServiceLocked(IApplicationThread caller, IBinder token, Intent service,
+              String resolvedType, final IServiceConnection connection, int flags,
+              String callingPackage, final int userId) throws TransactionTooLargeException {
+              ...
+              if (s.app != null && b.intent.received) {
+                  // Service is already running, so we can immediately
+                  // publish the connection.
+                  try {
+                      c.conn.connected(s.name, b.intent.binder, false);
+                  } catch (Exception e) {
+                      Slog.w(TAG, "Failure sending service " + s.shortName
+                              + " to connection " + c.conn.asBinder()
+                              + " (in " + c.binding.client.processName + ")", e);
+                  }
+  
+                  // If this is the first app connected back to this binding,
+                  // and the service had previously asked to be told when
+                  // rebound, then do so.
+                  if (b.intent.apps.size() == 1 && b.intent.doRebind) {
+                      requestServiceBindingLocked(s, b.intent, callerFg, true);
+                  }
+              } else if (!b.intent.requested) {
+                  requestServiceBindingLocked(s, b.intent, callerFg, false);
+              }
+              ...
+              }
+  ```
+
+  requestServiceBindingLocked方法内r.app.thread.scheduleBindService，r.app.thread获取的是IApplicationThread，IApplicationThread是一个Binder类型的对象，它的具体实现是ActivityThread中的ApplicationThread，实际调用的是ActivityThread的内部类的ApplicationThread中的scheduleBindService
+
+  ```
+  private final boolean requestServiceBindingLocked(ServiceRecord r, IntentBindRecord i,
+              boolean execInFg, boolean rebind) throws TransactionTooLargeException {
+          if (r.app == null || r.app.thread == null) {
+              // If service is not currently running, can't yet bind.
+              return false;
+          }
+          if (DEBUG_SERVICE) Slog.d(TAG_SERVICE, "requestBind " + i + ": requested=" + i.requested
+                  + " rebind=" + rebind);
+          if ((!i.requested || rebind) && i.apps.size() > 0) {
+              try {
+                  bumpServiceExecutingLocked(r, execInFg, "bind");
+                  r.app.forceProcessStateUpTo(ActivityManager.PROCESS_STATE_SERVICE);
+                  r.app.thread.scheduleBindService(r, i.intent.getIntent(), rebind,
+                          r.app.repProcState);
+                  if (!rebind) {
+                      i.requested = true;
+                  }
+                  i.hasBound = true;
+                  i.doRebind = false;
+              } catch (TransactionTooLargeException e) {
+                  // Keep the executeNesting count accurate.
+                  if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "Crashed while binding " + r, e);
+                  final boolean inDestroying = mDestroyingServices.contains(r);
+                  serviceDoneExecutingLocked(r, inDestroying, inDestroying);
+                  throw e;
+              } catch (RemoteException e) {
+                  if (DEBUG_SERVICE) Slog.v(TAG_SERVICE, "Crashed while binding " + r);
+                  // Keep the executeNesting count accurate.
+                  final boolean inDestroying = mDestroyingServices.contains(r);
+                  serviceDoneExecutingLocked(r, inDestroying, inDestroying);
+                  return false;
+              }
+          }
+          return true;
+      }
+  ```
+
+- ApplicationThread的scheduleBindService
+
+  在该方法内最终调用sendMessage方法即最后调用ActivityThread内部的Handler的handleMessage方法
+
+  ```
+  public final void scheduleBindService(IBinder token, Intent intent,
+                  boolean rebind, int processState) {
+              updateProcessState(processState, false);
+              BindServiceData s = new BindServiceData();
+              s.token = token;
+              s.intent = intent;
+              s.rebind = rebind;
+  
+              if (DEBUG_SERVICE)
+                  Slog.v(TAG, "scheduleBindService token=" + token + " intent=" + intent + " uid="
+                          + Binder.getCallingUid() + " pid=" + Binder.getCallingPid());
+              sendMessage(H.BIND_SERVICE, s);
+          }
+  ```
+
+  ```
+   private void sendMessage(int what, Object obj, int arg1, int arg2, boolean async) {
+          if (DEBUG_MESSAGES) Slog.v(
+              TAG, "SCHEDULE " + what + " " + mH.codeToString(what)
+              + ": " + arg1 + " / " + obj);
+          Message msg = Message.obtain();
+          msg.what = what;
+          msg.obj = obj;
+          msg.arg1 = arg1;
+          msg.arg2 = arg2;
+          if (async) {
+              msg.setAsynchronous(true);
+          }
+          mH.sendMessage(msg);
+      }
+  ```
+
+  接着我们看mH（Handler）这个类中的handleMessage方法。由于上文传的类型是BIND_SERVICE然后看BIND_SERVICE下的代码，调用了handleBindService方法。
+
+  ```
+   ...
+   case BIND_SERVICE:
+                      Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "serviceBind");
+                      handleBindService((BindServiceData)msg.obj);
+                      Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                      break;
+    ....                  
+  ```
+
+  handleBindService方法内，会判断是否已经绑定过，如果未绑定调用Service的onBinder方法获取Binder对象，并且调用AMS的publishService，最终会在该方法内调用ServiceConnection的connected方法并将Binder对象传递过去。
+
+  ```
+   private void handleBindService(BindServiceData data) {
+          Service s = mServices.get(data.token);
+          if (DEBUG_SERVICE)
+              Slog.v(TAG, "handleBindService s=" + s + " rebind=" + data.rebind);
+          if (s != null) {
+              try {
+                  data.intent.setExtrasClassLoader(s.getClassLoader());
+                  data.intent.prepareToEnterProcess();
+                  try {
+                      if (!data.rebind) {
+                          IBinder binder = s.onBind(data.intent);
+                          ActivityManager.getService().publishService(
+                                  data.token, data.intent, binder);
+                      } else {
+                          s.onRebind(data.intent);
+                          ActivityManager.getService().serviceDoneExecuting(
+                                  data.token, SERVICE_DONE_EXECUTING_ANON, 0, 0);
+                      }
+                      ensureJitEnabled();
+                  } catch (RemoteException ex) {
+                      throw ex.rethrowFromSystemServer();
+                  }
+              } catch (Exception e) {
+                  if (!mInstrumentation.onException(s, e)) {
+                      throw new RuntimeException(
+                              "Unable to bind to service " + s
+                              + " with " + data.intent + ": " + e.toString(), e);
+                  }
+              }
+          }
+      }
+  ```
+
+
+
+
+
+
+
+

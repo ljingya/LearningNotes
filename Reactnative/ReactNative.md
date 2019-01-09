@@ -86,11 +86,11 @@ React Native项目主要通过命令行来创建一个项目：
     为了将项目的 React Native 页面放置在一个目录中，在项目的根目录新建了一个名称为 app 的文件夹作为存放 React Native 页面的目录。在这个目录结构下根据不同的业务模块对目录进行了分层。具体的分层:
 
     层级目录 | 功能
-    ---|---
+    :--|---
     common | 公用的样式文件和公用的常量文件等
     component | 抽取的功能组件
     img| 项目中使用的图片资源
-    navigate目录| 对路由统一管理的目录
+    navigate| 对路由统一管理的目录
     util| 工具文件
     view| 页面文件的目录，在这个目录下会根据具体提的业务划分不同的文件夹
 
@@ -126,14 +126,16 @@ React Native项目主要通过命令行来创建一个项目：
         }
     ```
 
+    ###### 5.2.1 登录注册
+
     在 view 的目录下创建一个名叫 login 的文件夹，并在这个目录下创建三个文件 LoginView.js  (登陆组件), SplashView.js  (启动组件)，RegisterView.js  (注册组件)。这一部分功能需要实现启动页面组件，登陆页面组件，注册页面组件以及页面间跳转的路由。
 
-- 路由
+- 路由（ AppStack.js ）
 
     路由的实现需要用到 React Navigation，因此在使用前需要调用命令 yarn add react-navigation 安装该包。这样就可以使用该包 下的导航组件了。
-    
+
     首先为了统一管理页面组件，在 navigte 目录下新建 AppStack.js，在该文件下创建路由组件，将每个需要跳转的页面注册到该路由中，由于 app 启动的第一个页面是启动组件，因此将路由的 initialRouteName 属性设置为启动页面，代码如下：
-    
+
     ```
     export const StackNavigator = createStackNavigator(
     {
@@ -192,7 +194,7 @@ React Native项目主要通过命令行来创建一个项目：
     export default class App extends Component {
     constructor(props) {
     super(props);
-
+    
     }
     render() {
     return (
@@ -201,19 +203,19 @@ React Native项目主要通过命令行来创建一个项目：
         }
     }
     ```
-    
+
     这样当应用启动的时候，应用呈现的第一个页面便是启动组件的内容。
-- 启动组件
-  
+- 启动组件（ SplashView.js ）
+
     该组件需要实现以下功能，设置一张启动页面的图片，及设置一秒延时跳转到下一个页面，当应用第一次启动需要跳转到登陆页面，登陆完成之后当下一次启动直接跳转到首页。
-    
+
     布局主要由一个根 View 组件嵌套一个 Image 组件。代码如下：
      ```
     <View style={styles.root}>
         <Image source={require('../../img/default.png')} />
     </View>
      ```
-    
+
      跳转逻辑主要实现，在 componentDidMount 方法中设置1秒延时的定时器，在跳转页面前先从 AsyncStorageUtil 中获取userName，AsyncStorageUtil 是对 AsyncStorage 这个异步存储的 api 的简单封装。若获取到这个存储的值，说明不是第一次登陆，跳转到首页，若为空，说明是第一登陆或者存储的值当退出登陆的时候被清除了，需要跳转到登陆页面。另外当组件销毁的时候需要清除定时器，代码如下:
     ```
      /**
@@ -228,7 +230,7 @@ React Native项目主要通过命令行来创建一个项目：
                     this.props.navigation.navigate('Login');
                 }
             });
-
+    
         }, 1000);
     }
     /**
@@ -238,15 +240,15 @@ React Native项目主要通过命令行来创建一个项目：
         this.timer && clearTimeout(this.timer);
     }
     ```
-    
-- 登陆组件
-  
+
+- 登陆组件（ LoginView.js ）
+
     登陆组件主要实现账号输入框宫功能及密码输入框功能，登陆功能和跳转注册组件的功能。
 
     最终页面效果如下:
-    
+
     ![图5-5](https://note.youdao.com/yws/api/personal/file/A1124736634040859E60E6912D4BC3F7?method=download&shareKey=8b5ee5636bf2d9daec0076dd7e2a0048)
-    
+
 
    布局代码主要用 TextInput 组件及 TouchableOpacity 组件实现,代码如下:
 ​    
@@ -366,7 +368,7 @@ onPress = () => {
 
 
 ​    
-- 注册页面
+- 注册页面（ RegisterView.js ）
   
     注册页面主要由，注册账号的输入框和注册密码的输入框功能，注册功能。
 
@@ -465,6 +467,8 @@ onPress = () => {
     ```
     
 
+###### 5.2.2 首页
+
 首页包含了底部的 TabBar 和书单列表页面两部分。底部的 TabBar 的实现使用 React Navigation 的 createBottomTabNavigator 实现。书单 ShuDanView 组件，列表头部的标签使用 react-native-scrollable-tab-view 这个库实现，对于该库具体的使用可以在github上搜索该库，查找详细的使用方法，这里只介绍用到属性和方法。另外为了将标签的逻辑和列表的逻辑抽离，在view目录下的书单目录中创建 ShuDanListView.js 文件，将列表功能的逻辑抽取到 ShuDanListView 组件中。
 
 效果图如下:
@@ -511,21 +515,21 @@ onPress = () => {
     ```
 
 
-- 书单组件（ShuDanView）
-  
+- 书单组件（ ShuDanView.js ）
+
     在 view 目录下创建 shuadan 目录，这个目录存放整个书单业务的全部组件。在书单目录下创建 ShuDanView.js 文件，并创建 ShuDanView 组件。书单顶部的tab标签使用的是 react-native-scrollable-tab-view 组件完成，在使用前也需要先安装该库，使用 yarn add react-native-scrollable-tab-view  安装该包，然后导出该包下的两个组件，
     ```
     import ScrollableTabView, {  ScrollableTabBar } from 'react-native-scrollable-tab-view';
     ```
     ScrollableTabView：用来嵌套列表组件。需要在嵌套的子组件中添加tabLabel属性，表示子组件对应标签的名称。
-    
+
     ScrollableTabBar：一个可滑动的tab标签组件。
-    
+
     该页面的具体布局，主要由如下ScrollableTabView组件和的 ShanDanListView 列表组件组成，在该布局中调用 renderList 方法，返回列表组件，另外为了在书单组件中处理列表组件中的点击事件和获取到需要传递到下一个页面的值，因此为 ShanDanListView 组件添加了一个 onPress的属性值，用于处理点击事件。代码如下:
     ```
     render() {
         return (
-
+    
             <ScrollableTabView
                 renderTabBar={() => <ScrollableTabBar />}
                 style={{ flex: 1, backgroundColor: '#FFFFFF' }}
@@ -535,7 +539,7 @@ onPress = () => {
                     this.renderList()
                 }
             </ScrollableTabView>
-
+    
         );
     }
     
@@ -560,14 +564,14 @@ onPress = () => {
         this.props.navigation.navigate('ShuDanDetail', { name: name });
     }
     ```
-    
+
     请求网络功能的代码如下：
     ```
     
     componentDidMount = () => {
         this.getTabs();
     }
-
+    
     getTabs = () => {
         let url = Constant.baseUrl + 'action=category';
         let _this=this;
@@ -578,15 +582,15 @@ onPress = () => {
                 });
             },
             onError(code, errorMsg) {
-
+    
             }
         };
         httpFetch(url, 'GET', null, callBack);
     }
     ```
     当组件挂载的时候请求网络，返回成功的时候将返回的数据设置给 shuDanTabsArray 该数组。当调用 this.setState 方法之后，会重新渲染该界面。
-    
-- 书单列表组件（ShanDanListView）
+
+- 书单列表组件（ ShanDanListView.js ）
 
     ShanDanListView 组件主要使用 FlatList 组件， 由于是网格布局，将其numColumns属性设置为2，在data属性中设置state值，在 renderItem 设置返回布局的每个 Item 组件。当点击 Item 组件 的时候会触发 TouchableOpacity 的onPress 方法。在 onPress 方法中调用 this.props.onPress(name)，触发书单组件中的 onPress 方法，布局代码如下：
     ```
@@ -607,7 +611,7 @@ onPress = () => {
             imageSource = { uri: item.image };
         }
         return (<TouchableOpacity style={[styles.item_root]} onPress={() => this.onPress(item.id)}>
-
+    
             <Image style={styles.img}source={imageSource} resizeMode='center'/>
             <Text style={styles.text}>{item.name}</Text>
         </TouchableOpacity>)
@@ -625,7 +629,7 @@ onPress = () => {
      componentDidMount = () => {
        this.getList();
     }
-
+    
     getList=()=>{
         let url = Constant.baseUrl + 'action=list&q='+this.props.tabLabel;
         let _this=this;
@@ -636,7 +640,7 @@ onPress = () => {
                 });
             },
             onError(code, errorMsg) {
-
+    
             }
         };
         httpFetch(url, 'GET', null, callBack);
@@ -645,7 +649,7 @@ onPress = () => {
     在组件挂载的时候请求网络，在获取成功数据之后，通过 setState 方法设置 shuDanItemArray 数组，然后重新渲染该组件。
 
 ###### 5.2.3 个人中心页面
-个人中心页面主要显示个人的信息功能，因此这个页面主要是显示功能，侧重布局功能，无其他业务逻辑。
+account 目录下创建 MeView.js ,作为个人中心页面的组件。 个人中心页面主要显示个人的信息功能，因此这个页面主要是显示功能，侧重布局功能，无其他业务逻辑。
 
 效果图:
 ​    

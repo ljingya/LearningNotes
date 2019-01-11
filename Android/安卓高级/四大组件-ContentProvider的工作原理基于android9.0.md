@@ -111,3 +111,25 @@ ContentProvider是安卓的四大组件之一，底层使用Binder，可以用�
            }
        }
    ```
+
+2. ###### ContentProvider的使用分析
+
+   ContentProvider是通过getContentResolver()方法获取ContentResolver调用增删改查方法。因此使用的分析从增删改查分析，这里只以query方法进行分析。getContentResolver方法调用ContextWrapper中的getContentResolver方法,该方法内调用ContextImpl方法的getContentResolver方法。
+
+   ```
+    @Override
+       public ContentResolver getContentResolver() {
+           return mBase.getContentResolver();
+       }
+   ```
+
+   ContextImpl方法的getContentResolver，最终返回ApplicationContentResolver对象，该类继承ContentResolver。
+
+   ```
+   @Override
+       public ContentResolver getContentResolver() {
+           return mContentResolver;
+       }
+   ```
+
+   接下来调用ContentResolver的query方法。

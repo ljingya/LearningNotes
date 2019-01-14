@@ -123,7 +123,7 @@ ContentProvider是安卓的四大组件之一，底层使用Binder，可以用�
        }
    ```
 
-   ContextImpl方法的getContentResolver，最终返回ApplicationContentResolver对象，该类继承ContentResolver。
+   ContextImpl方法的getContentResolver，最终返回ContextImpl.ApplicationContentResolver对象，该类继承ContentResolver。
 
    ```
    @Override
@@ -132,4 +132,85 @@ ContentProvider是安卓的四大组件之一，底层使用Binder，可以用�
        }
    ```
 
-   接下来调用ContentResolver的query方法。
+   接下来调用ContentResolver的query方法。最终去调用acquireUnstableProvider或者acquireProvider获取有用或者无用的IContentProvider这个Binder类型的对象,IContentProvider的具体实现是ContentProviderNative和ContentProvider.Transport，当调用query方法时，实际调用的是ContentProvider.Transport内部的query方法。
+
+   ```
+     public final @Nullable Cursor query(@RequiresPermission.Read @NonNull Uri uri,
+               @Nullable String[] projection, @Nullable String selection,
+               @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+           return query(uri, projection, selection, selectionArgs, sortOrder, null);
+       }
+   ```
+
+   ```
+    public final @Nullable Cursor query(final @RequiresPermission.Read @NonNull Uri uri,
+               @Nullable String[] projection, @Nullable Bundle queryArgs,
+               @Nullable CancellationSignal cancellationSignal) {
+           Preconditions.checkNotNull(uri, "uri");
+           IContentProvider unstableProvider = acquireUnstableProvider(uri);
+           if (unstableProvider == null) {
+               return null;
+           }
+           IContentProvider stableProvider = null;
+           Cursor qCursor = null;
+           try {
+               long startTime = SystemClock.uptimeMillis();
+   
+               ICancellationSignal remoteCancellationSignal = null;
+               if (cancellationSignal != null) {
+                   cancellationSignal.throwIfCanceled();
+                   remoteCancellationSignal = unstableProvider.createCancellationSignal();
+                   cancellationSignal.setRemote(remoteCancellationSignal);
+               }
+               try {
+                   qCursor = unstableProvider.query(mPackageName, uri, projection,
+                           queryArgs, remoteCancellationSignal);
+          ...
+       }
+   ```
+
+   ```
+    public final IContentProvider acquireUnstableProvider(Uri uri) {
+           if (!SCHEME_CONTENT.equals(uri.getScheme())) {
+               return null;
+           }
+           String auth = uri.getAuthority();
+           if (auth != null) {
+               return acquireUnstableProvider(mContext, uri.getAuthority());
+           }
+           return null;
+       }
+   ```
+
+   ContentProvider.Transport的query方法,最终调用ContentProvider的query方法。
+
+   ```
+   @Override
+           public Cursor query(String callingPkg, Uri uri, @Nullable String[] projection,
+                   @Nullable Bundle queryArgs, @Nullable ICancellationSignal cancellationSignal) {
+       ...
+   
+                   // Null projection means all columns but we have no idea which they are.
+                   // However, the caller may be expecting to access them my index. Hence,
+                   // we have to execute the query as if allowed to get a cursor with the
+                   // columns. We then use the column names to return an empty cursor.
+                   Cursor cursor = ContentProvider.this.query(
+                           uri, projection, queryArgs,
+                           CancellationSignal.fromTransport(cancellationSignal));
+                   if (cursor == null) {
+                       return null;
+                   }
+   
+                   // Return an empty cursor for all columns.
+                   return new MatrixCursor(cursor.getColumnNames(), 0);
+               }
+               final String original = setCallingPackage(callingPkg);
+               try {
+                   return ContentProvider.this.query(
+                           uri, projection, queryArgs,
+                           CancellationSignal.fromTransport(cancellationSignal));
+               } finally {
+                   setCallingPackage(original);
+               }
+           }
+   ```

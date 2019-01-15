@@ -27,7 +27,7 @@ Android中的广播分为动态广播和静态广播，静态广播需要在清�
 
    - ContextImpl的registerReceiverInternal方法
 
-     该方法内最终调用ActivityManagerService的registerReceiver方法。并将ThreadActivity内部的ApplicationThread传入。这个过程设计到跨进程，因此使用了IIntentReceiver这个Binder接口，它的具体实现时LoadedApk.ReceiverDispatcher.InnerReceiver，创建了ReceiverDispatcher对象，并将BroadCastReciver及InnerReceiver保存在ReceiverDispatcher对象中。
+     该方法内最终调用ActivityManagerService的registerReceiver方法。并将ThreadActivity内部的ApplicationThread传入。这个过程涉及到跨进程，因此使用了IIntentReceiver这个Binder接口，它的具体实现时LoadedApk.ReceiverDispatcher.InnerReceiver，创建了ReceiverDispatcher对象，并将BroadCastReciver及InnerReceiver保存在ReceiverDispatcher对象中。
 
      ```
      private Intent registerReceiverInternal(BroadcastReceiver receiver, int userId,
@@ -313,7 +313,7 @@ Android中的广播分为动态广播和静态广播，静态广播需要在清�
      ...				                    
      ```
 
-
+总结：当调用广播的注册方法时，会将BroadcastReciver保存在LoadedApk.BroadcastDispatcher中，并返回一个IIntentReceiver的Binder的接口，具体的实现是LoadedApk.BroadcastDispatcher.InnerReceiver，然后调用AMS的registerReceiver方法将IIntentReceiver和BroadcastFilter存储起来。当调用广播的发送方法时，会通过AMS调用broadcastIntent方法，最终调用ActivityThread内部类的ApplicationThread中的scheduleRegisteredReceiver，然后调用IIntentReceiver这个Binder类型的实现类IntentReceiver的performReceive，最终调用BroadcastReciver的onReciver方法。在这个过程中AMS持有IApplicationThread和IIntentReceiver这两个Binder类型的接口。
 
 
    ​		

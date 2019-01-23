@@ -6,10 +6,6 @@ EventBus 是安卓中的一个事件总线库，可用于替代广播，Handler�
 
 ![](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Image/EventBus.jpg)
 
-<center>
-   <u>图1.1 EventBus</u> 
-</center>
-
 这是EventBus的Github上的一张介绍图，从图中可以理解EventBus的工作流程，发布者即 Publisher 发布事件到EventBus中，通过EventBus将事件传递给观察者即Suncriber。
 
 ##### 二、EventBus的使用
@@ -24,34 +20,34 @@ implementation 'org.greenrobot:eventbus:3.1.1'
 
 2. ###### 定义事件类型
 
-   定义一个实体类，作为传递的事件。
+定义一个实体类，作为传递的事件。
 
-   ```
-   public class EventMessageType {
-   
-       private int type;
-   
-       private String data;
-   
-       public int getType() {
-           return type;
-       }
-   
-       public void setType(int type) {
-           this.type = type;
-       }
-   
-       public String getData() {
-           return data;
-       }
-   
-       public void setData(String data) {
-           this.data = data;
-       }
-   }
-   ```
+```
+public class EventMessageType {
 
-3. ###### 事件注册
+    private int type;
+
+    private String data;
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+}
+```
+
+###### 3. 事件注册
 
 在Actiivty的onCreate中调用 **EventBus.getDefault().register(this)**，将该Activity的实例注册到EventBus中，然后需要为接收事件的方法添加 **@Subscribe**注解。在该注解类型中可以设置接收事件所在的线程，优先级，以及是否是粘性事件。当页面销毁的时候需要调用 **EventBus.getDefault().unregister(this)**  解绑注册。
 

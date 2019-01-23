@@ -1,204 +1,288 @@
 ##### EventBus源码分析
 
-EventBus是安卓中的一个事件总线库，可用于替代广播，和用于组件化中组件间通信的库。
+##### 一、简述
 
-1. ###### 使用
+EventBus 是安卓中的一个事件总线库，可用于替代广播，Handler和用于组件化中组件间通信的库。
 
-   ###### app的gradle中添加如下依赖
+![](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Image/EventBus.jpg)
+
+<center>
+   <u>图1.1 EventBus</u> 
+</center>
+
+这是EventBus的Github上的一张介绍图，从图中可以理解EventBus的工作流程，发布者即 Publisher 发布事件到EventBus中，通过EventBus将事件传递给观察者即Suncriber。
+
+##### 二、EventBus的使用
+
+1. ###### 添加依赖
+
+​    在 module的gradle中添加
+
+```
+implementation 'org.greenrobot:eventbus:3.1.1'
+```
+
+2. ###### 定义事件类型
+
+   定义一个实体类，作为传递的事件。
 
    ```
-   implementation 'org.greenrobot:eventbus:3.1.1'
-   ```
-
-   ###### 注册事件
-
-   ```
-   public class EventBusAct extends AppCompatActivity implements OnClickListener {
+   public class EventMessageType {
    
-       private TextView tvDesc;
+       private int type;
    
-       @Override
-       protected void onCreate(@Nullable Bundle savedInstanceState) {
-           super.onCreate(savedInstanceState);
-           setContentView(R.layout.act_event);
-           tvDesc = findViewById(R.id.tv_desc);
-           tvDesc.setOnClickListener(this);
-           EventBus.getDefault().register(this);
+       private String data;
+   
+       public int getType() {
+           return type;
        }
    
-       @Subscribe(threadMode = ThreadMode.MAIN)
-       public void onMessageEvent(String msg) {
-           tvDesc.setText(msg);
+       public void setType(int type) {
+           this.type = type;
        }
    
-       @Override
-       protected void onDestroy() {
-           EventBus.getDefault().unregister(this);
-           super.onDestroy();
+       public String getData() {
+           return data;
        }
    
-       @Override
-       public void onClick(View v) {
-           Intent intent = new Intent();
-           switch (v.getId()) {
-               case R.id.tv_desc:
-                   intent.setClass(this, EventBusSecAct.class);
-                   break;
-           }
-           startActivity(intent);
+       public void setData(String data) {
+           this.data = data;
        }
    }
    ```
 
-   ###### 发布事件
+3. ###### 事件注册
 
-   ```
-    EventBus.getDefault().post("Hello");
-   ```
+在Actiivty的onCreate中调用 **EventBus.getDefault().register(this)**，将该Activity的实例注册到EventBus中，然后需要为接收事件的方法添加 **@Subscribe**注解。在该注解类型中可以设置接收事件所在的线程，优先级，以及是否是粘性事件。当页面销毁的时候需要调用 **EventBus.getDefault().unregister(this)**  解绑注册。
 
-   使用EventBus就是以上三步，先注册事件，然后发布事件。在注册事件的地方便能收到发布事件时携带的数据。
+```
+public class EventBusAct extends AppCompatActivity implements OnClickListener {
 
-2. ###### 源码分析
+    private TextView tvDesc;
 
-   ###### 注册分析
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.act_event);
+        tvDesc = findViewById(R.id.tv_desc);
+        tvDesc.setOnClickListener(this);
+        EventBus.getDefault().register(this);
+    }
 
-   EventBus首先通过getDefault方法获取到单例的EventBus,该方法内做了双重判断，由于加了同步锁会对性能产生影响。
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(String msg) {
+        tvDesc.setText(msg);
+    }
 
-   ```
-     public static EventBus getDefault() {
-           if (defaultInstance == null) {
-               synchronized (EventBus.class) {
-                   if (defaultInstance == null) {
-                       defaultInstance = new EventBus();
-                   }
-               }
-           }
-           return defaultInstance;
-       }
-   ```
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
 
-   调用register方法。
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent();
+        switch (v.getId()) {
+            case R.id.tv_desc:
+                intent.setClass(this, EventBusSecAct.class);
+                break;
+        }
+        startActivity(intent);
+    }
+}
+```
 
-   ```
-   public void register(Object subscriber) {
-           Class<?> subscriberClass = subscriber.getClass();
-           List<SubscriberMethod> subscriberMethods = subscriberMethodFinder.findSubscriberMethods(subscriberClass);
-           synchronized (this) {
-               for (SubscriberMethod subscriberMethod : subscriberMethods) {
-                   subscribe(subscriber, subscriberMethod);
-               }
-           }
-       }
-   ```
+4. ###### 发布事件
 
-   在该方法内主要做以下事情：
+发布事件通过EventBus发布一个事件，事件类型可以是基本类型，String类型，或者自定义的JavaBean。
 
-   ###### 通过SubscriberMethodFinder#findSubscriberMethods方法查找对象内，添加Subscribe注解的方法。然后调用subscribe方法进行订阅。下面对该方法内的逻辑进行分析。
+```
+ EventBus.getDefault().post("Hello");
+```
 
-   SubscriberMethodFinder#findSubscriberMethods代码如下：
+使用EventBus就是以上步骤，先注册事件，然后发布事件。在注册事件的地方便能收到发布事件时携带的数据。接下来我们就进入源码分析。理解EventBus内部是如何工作。
 
-   ```
-    List<SubscriberMethod> findSubscriberMethods(Class<?> subscriberClass) {
-           List<SubscriberMethod> subscriberMethods = METHOD_CACHE.get(subscriberClass);
-           if (subscriberMethods != null) {
-               return subscriberMethods;
-           }
-   
-           if (ignoreGeneratedIndex) {
-               subscriberMethods = findUsingReflection(subscriberClass);
-           } else {
-               subscriberMethods = findUsingInfo(subscriberClass);
-           }
-           if (subscriberMethods.isEmpty()) {
-               throw new EventBusException("Subscriber " + subscriberClass
-                       + " and its super classes have no public methods with the @Subscribe annotation");
-           } else {
-               METHOD_CACHE.put(subscriberClass, subscriberMethods);
-               return subscriberMethods;
-           }
-       }
-   ```
+##### 三、源码分析
 
-   SubscriberMethodFinder#findSubscriberMethods方法中先从METHOD_CACHE这个map对象缓存中获取SubscriberMethod的集合。
+###### 3.1 EventBus#getDefault方法
 
-   ignoreGeneratedIndex初始化时false,因此调用SubscriberMethodFinder#findUsingInfo方法获取到SubscriberMethod的集合，并添加到METHOD_CACHE缓存中。
+```
+  public static EventBus getDefault() {
+        if (defaultInstance == null) {
+            synchronized (EventBus.class) {
+                if (defaultInstance == null) {
+                    defaultInstance = new EventBus();
+                }
+            }
+        }
+        return defaultInstance;
+    }
+```
 
-   SubscriberMethodFinder#findUsingInfo方法
+EventBus首先通过getDefault方法获取到单例的EventBus,该方法内做了双重判断，由于加了同步锁会对性能产生影响，这样做可以优化性能。接下来看EventBus的构造方法。
 
-   ```
-    private List<SubscriberMethod> findUsingInfo(Class<?> subscriberClass) {
-           FindState findState = prepareFindState();
-           findState.initForSubscriber(subscriberClass);
-           while (findState.clazz != null) {
-               findState.subscriberInfo = getSubscriberInfo(findState);
-               if (findState.subscriberInfo != null) {
-                   SubscriberMethod[] array = findState.subscriberInfo.getSubscriberMethods();
-                   for (SubscriberMethod subscriberMethod : array) {
-                       if (findState.checkAdd(subscriberMethod.method, subscriberMethod.eventType)) {
-                           findState.subscriberMethods.add(subscriberMethod);
-                       }
-                   }
-               } else {
-                   findUsingReflectionInSingleClass(findState);
-               }
-               findState.moveToSuperclass();
-           }
-           return getMethodsAndRelease(findState);
-       }
-   ```
+```
+ public EventBus() {
+        this(DEFAULT_BUILDER);
+    }
+```
 
-   在该方法中先调用SubscriberMethodFinder#prepareFindState方法获取FindState对象。FindState对象缓存在FIND_STATE_POOL这个数组中，每次调用时，会将这个对象数组清空，重新创建一个FindState对象。
+```
+EventBus(EventBusBuilder builder) {
+        logger = builder.getLogger();
+        subscriptionsByEventType = new HashMap<>();
+        typesBySubscriber = new HashMap<>();
+        stickyEvents = new ConcurrentHashMap<>();
+        mainThreadSupport = builder.getMainThreadSupport();
+        mainThreadPoster = mainThreadSupport != null ? mainThreadSupport.createPoster(this) : null;
+        backgroundPoster = new BackgroundPoster(this);
+        asyncPoster = new AsyncPoster(this);
+        indexCount = builder.subscriberInfoIndexes != null ? builder.subscriberInfoIndexes.size() : 0;
+        subscriberMethodFinder = new SubscriberMethodFinder(builder.subscriberInfoIndexes,
+                builder.strictMethodVerification, builder.ignoreGeneratedIndex);
+        logSubscriberExceptions = builder.logSubscriberExceptions;
+        logNoSubscriberMessages = builder.logNoSubscriberMessages;
+        sendSubscriberExceptionEvent = builder.sendSubscriberExceptionEvent;
+        sendNoSubscriberEvent = builder.sendNoSubscriberEvent;
+        throwSubscriberException = builder.throwSubscriberException;
+        eventInheritance = builder.eventInheritance;
+        executorService = builder.executorService;
+    }
+```
 
-   ```
-   private FindState prepareFindState() {
-           synchronized (FIND_STATE_POOL) {
-               for (int i = 0; i < POOL_SIZE; i++) {
-                   FindState state = FIND_STATE_POOL[i];
-                   if (state != null) {
-                       FIND_STATE_POOL[i] = null;
-                       return state;
-                   }
-               }
-           }
-           return new FindState();
-       }
-   ```
+在构造方法内，通过EventBusBuilder类初始化了如下数据:
 
-   接着调用FindState#initForSubscriber初始化数据，SubscriberInfo对象初始化为null。
+**subscriptionsByEventType:** Map<Class<?>, CopyOnWriteArrayList<Subscription>>对象。该Map以事件类型的Class对象为key，以 CopyOnWriteArrayList<Subscription>集合为value。Subscription保存了Activity实例，以及注解的方法名称，以及事件类型的Class对象，及注解的值，使用CopyOnWriteArrayList保证了线程安全。
 
-   ```
-     void initForSubscriber(Class<?> subscriberClass) {
-               this.subscriberClass = clazz = subscriberClass;
-               skipSuperClasses = false;
-               subscriberInfo = null;
-           }
-   ```
+**typesBySubscriber:**Map<Object, List<Class<?>>>对象。该Map以Activity实例为key，以事件类型的Class对象为集合的value，组成映射。
 
-   然后调用SubscriberMethodFinder#getSubscriberInfo方法获取FindState内部的SubscriberInfo对象。
+**stickyEvents：**Map<Class<?>, Object>对象。存储粘性事件的Map。以事件类型的Class对象为key，以事件类型为value组成映射。
 
-   由于FindState内部的SubscriberInfo对象初始化为null,并且subscriberInfoIndexes在EventBus对象创建的时候是为null,因此FindState内部的SubscriberInfo对象返回null。
 
-   ```
-    private SubscriberInfo getSubscriberInfo(FindState findState) {
-           if (findState.subscriberInfo != null && findState.subscriberInfo.getSuperSubscriberInfo() != null) {
-               SubscriberInfo superclassInfo = findState.subscriberInfo.getSuperSubscriberInfo();
-               if (findState.clazz == superclassInfo.getSubscriberClass()) {
-                   return superclassInfo;
-               }
-           }
-           if (subscriberInfoIndexes != null) {
-               for (SubscriberInfoIndex index : subscriberInfoIndexes) {
-                   SubscriberInfo info = index.getSubscriberInfo(findState.clazz);
-                   if (info != null) {
-                       return info;
-                   }
-               }
-           }
-           return null;
-       }
-   ```
 
-   由于SubscriberMethodFinder#getSubscriberInfo返回为null.因此调用SubscriberMethodFinder#findUsingReflectionInSingleClass方法，在该方法内通过反射获取注册的实例的所有方法，并获取方法上的注解值，并最终将方法，运行线程的类型等组装到SubscriberMethod对象中，并保存在FindState中。
+调用register方法。
+
+```
+public void register(Object subscriber) {
+        Class<?> subscriberClass = subscriber.getClass();
+        List<SubscriberMethod> subscriberMethods = subscriberMethodFinder.findSubscriberMethods(subscriberClass);
+        synchronized (this) {
+            for (SubscriberMethod subscriberMethod : subscriberMethods) {
+                subscribe(subscriber, subscriberMethod);
+            }
+        }
+    }
+```
+
+在该方法内主要做以下事情：
+
+###### 通过SubscriberMethodFinder#findSubscriberMethods方法查找对象内，添加Subscribe注解的方法。然后调用subscribe方法进行订阅。下面对该方法内的逻辑进行分析。
+
+SubscriberMethodFinder#findSubscriberMethods代码如下：
+
+```
+ List<SubscriberMethod> findSubscriberMethods(Class<?> subscriberClass) {
+        List<SubscriberMethod> subscriberMethods = METHOD_CACHE.get(subscriberClass);
+        if (subscriberMethods != null) {
+            return subscriberMethods;
+        }
+
+        if (ignoreGeneratedIndex) {
+            subscriberMethods = findUsingReflection(subscriberClass);
+        } else {
+            subscriberMethods = findUsingInfo(subscriberClass);
+        }
+        if (subscriberMethods.isEmpty()) {
+            throw new EventBusException("Subscriber " + subscriberClass
+                    + " and its super classes have no public methods with the @Subscribe annotation");
+        } else {
+            METHOD_CACHE.put(subscriberClass, subscriberMethods);
+            return subscriberMethods;
+        }
+    }
+```
+
+SubscriberMethodFinder#findSubscriberMethods方法中先从METHOD_CACHE这个map对象缓存中获取SubscriberMethod的集合。
+
+ignoreGeneratedIndex初始化时false,因此调用SubscriberMethodFinder#findUsingInfo方法获取到SubscriberMethod的集合，并添加到METHOD_CACHE缓存中。
+
+SubscriberMethodFinder#findUsingInfo方法
+
+```
+ private List<SubscriberMethod> findUsingInfo(Class<?> subscriberClass) {
+        FindState findState = prepareFindState();
+        findState.initForSubscriber(subscriberClass);
+        while (findState.clazz != null) {
+            findState.subscriberInfo = getSubscriberInfo(findState);
+            if (findState.subscriberInfo != null) {
+                SubscriberMethod[] array = findState.subscriberInfo.getSubscriberMethods();
+                for (SubscriberMethod subscriberMethod : array) {
+                    if (findState.checkAdd(subscriberMethod.method, subscriberMethod.eventType)) {
+                        findState.subscriberMethods.add(subscriberMethod);
+                    }
+                }
+            } else {
+                findUsingReflectionInSingleClass(findState);
+            }
+            findState.moveToSuperclass();
+        }
+        return getMethodsAndRelease(findState);
+    }
+```
+
+在该方法中先调用SubscriberMethodFinder#prepareFindState方法获取FindState对象。FindState对象缓存在FIND_STATE_POOL这个数组中，每次调用时，会将这个对象数组清空，重新创建一个FindState对象。
+
+```
+private FindState prepareFindState() {
+        synchronized (FIND_STATE_POOL) {
+            for (int i = 0; i < POOL_SIZE; i++) {
+                FindState state = FIND_STATE_POOL[i];
+                if (state != null) {
+                    FIND_STATE_POOL[i] = null;
+                    return state;
+                }
+            }
+        }
+        return new FindState();
+    }
+```
+
+接着调用FindState#initForSubscriber初始化数据，SubscriberInfo对象初始化为null。
+
+```
+  void initForSubscriber(Class<?> subscriberClass) {
+            this.subscriberClass = clazz = subscriberClass;
+            skipSuperClasses = false;
+            subscriberInfo = null;
+        }
+```
+
+然后调用SubscriberMethodFinder#getSubscriberInfo方法获取FindState内部的SubscriberInfo对象。
+
+由于FindState内部的SubscriberInfo对象初始化为null,并且subscriberInfoIndexes在EventBus对象创建的时候是为null,因此FindState内部的SubscriberInfo对象返回null。
+
+```
+ private SubscriberInfo getSubscriberInfo(FindState findState) {
+        if (findState.subscriberInfo != null && findState.subscriberInfo.getSuperSubscriberInfo() != null) {
+            SubscriberInfo superclassInfo = findState.subscriberInfo.getSuperSubscriberInfo();
+            if (findState.clazz == superclassInfo.getSubscriberClass()) {
+                return superclassInfo;
+            }
+        }
+        if (subscriberInfoIndexes != null) {
+            for (SubscriberInfoIndex index : subscriberInfoIndexes) {
+                SubscriberInfo info = index.getSubscriberInfo(findState.clazz);
+                if (info != null) {
+                    return info;
+                }
+            }
+        }
+        return null;
+    }
+```
+
+由于SubscriberMethodFinder#getSubscriberInfo返回为null.因此调用SubscriberMethodFinder#findUsingReflectionInSingleClass方法，在该方法内通过反射获取注册的实例的所有方法，并获取方法上的注解值，并最终将方法，运行线程的类型等组装到SubscriberMethod对象中，并保存在FindState中。
 
 ```
     private void findUsingReflectionInSingleClass(FindState findState) {

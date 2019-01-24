@@ -1353,7 +1353,9 @@
                }
     ```
 
+###### 总结：
 
+当启动Activity时，会通过IActivitymanager发起一个远程请求，对应实现是ActivityManagerService，Activity的启动流程由ActivityManagerService处理，最后将处理结果传递给IApplicationThread这个Binder类型的接口。IApplicationThread的在客户端的实现是ActivityThread内部的ApplicationThread，而且ActivityThread内部维护了一个Handler，负责处理Activity启动的结果。
 
 
 

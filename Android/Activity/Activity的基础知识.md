@@ -6,11 +6,11 @@
 
 1. ##### 思维导图
 
-   ![Activity基础知识](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Android/Activity/Image/Activity%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.jpg)
+   ![Activity基础知识](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Image/Activity%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.jpg)
 
 2. ##### Activity的生命周期
 
-   ![Activity的生命周期](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Android/Activity/Image/Activity%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.jpg)
+   ![Activity的生命周期](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Image/Activity%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.jpg)
 
 3. ##### 启动模式
 

@@ -8,7 +8,15 @@
 
 2. ##### startForeground()
 
-    
+     startForeground()可以将Service设置为前台服务，在AndroidP之后需要添加权限才能使用。
+
+   ```
+    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+           Notification notification = new NotificationCompat.Builder(this, "chat").setContentTitle("收到一条聊天消息").setContentText("今天中午吃什么？").setWhen(System.currentTimeMillis()).setSmallIcon(R.mipmap.ic_launcher).setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher)).setAutoCancel(true).build();
+   startForeground(1, notification);
+   ```
+
+   
 
 3. ##### onStartCommand()与START_STICKY
 

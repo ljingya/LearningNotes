@@ -11,13 +11,13 @@ React Native项目主要通过命令行来创建一个项目：
     在这次实战项目中是基于 React Native 0.55 版本,在某个文件夹下打开命令行，调用 **react-native init ShuDanApp --version 0.55.0**。当指定使用ReactNative的某个版本的时候必须精确到两个小数点。
 
 2. 运行项目
-   
+  
     进入项目根目录，在 iOS 中调用 **react-native run-ios** 命令运行项目，在 Android 中使用 **react-native run-android** 命令运行项目。
 
 到这里，我们的实战项目就创建完成了。
 
 ###### 5.1.2 项目结构介绍
-​	React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 js 部分,项目结构如下:
+React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 js 部分,项目结构如下:
 
 ```
 │  App.js
@@ -73,15 +73,15 @@ React Native项目主要通过命令行来创建一个项目：
 
     该文件是整个程序的初始组件，这个组件会在index.js中进行注册。
 
-3. android目录
+3. android 目录
 
     在该文件夹下会生成一个 Android 项目工程。
 
-4. ios目录
+4. ios 目录
 
     在该文件夹下会生成一个 iOS 项目的工程。
 
-5. app文件夹
+5. app 目录
 
     为了将项目的 React Native 页面放置在一个目录中，在项目的根目录新建了一个名称为 app 的文件夹作为存放 React Native 页面的目录。在这个目录结构下根据不同的业务模块对目录进行了分层。具体的分层:
 

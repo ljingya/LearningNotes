@@ -18,6 +18,18 @@
 
    
 
+    通过startForeground可以提升Service的优先级，在通知栏中显示一条通知。将服务提升至前台服务。
+
+   ```
+     Notification notification = new NotificationCompat.Builder(this, "chat")
+                   .setContentTitle("收到一条聊天消息")
+                   .setContentText("今天中午吃什么？")
+                   .setWhen(System.currentTimeMillis())
+                   .setSmallIcon(R.mipmap.ic_launcher)
+                   .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
+                   .setAutoCancel(true).build();
+           startForeground(1, notification);
+   ```
 3. ##### onStartCommand()与START_STICKY
 
    START_STICKY：该值是onStartCommand()的返回值,当服务所在的进程被杀死，服务处于启动状态。随后系统会重建Service，但是不保留intent的状态，由于服务是开始的会重新调用onStartCommand()方法，如果后续没有开始命令发送到Service，那么Intent为null。

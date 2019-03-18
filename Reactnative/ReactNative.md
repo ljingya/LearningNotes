@@ -2,9 +2,9 @@
 
 ###### 5.1.1 创建项目
 
-在开发项目之前需要选择一款开发工具，在这里推荐使用 Visual Studio Code 作为开发 Reat Native 的工具，也可以选择使其他的开发工具。
+在开发项目之前需要选择一款开发工具，在这里推荐使用 Visual Studio Code 作为开发 Reat Native 的工具，也可以选择使用其他的开发工具。
 
-React Native项目主要通过命令行来创建一个项目：
+通过命令行创建项目：
 
 1. 创建项目
 
@@ -14,7 +14,7 @@ React Native项目主要通过命令行来创建一个项目：
   
     进入项目根目录，在 iOS 中调用 **react-native run-ios** 命令运行项目，在 Android 中使用 **react-native run-android** 命令运行项目。
 
-到这里，我们的实战项目就创建完成了。
+实战项目创建完成。
 
 ###### 5.1.2 项目结构介绍
 React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 js 部分,项目结构如下:
@@ -91,8 +91,8 @@ React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 
     component | 抽取的功能组件
     img| 项目中使用的图片资源
     navigate| 对路由统一管理的目录
-    util| 工具文件
-    view| 页面文件的目录，在这个目录下会根据具体提的业务划分不同的文件夹
+    util| 工具文件目录 
+    view| 页面文件的目录，在这个目录下会根据具体提的业务划分不同的目录 
 
 6. package.json
 
@@ -132,7 +132,7 @@ React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 
 
 - 路由（ AppStack.js ）
 
-    路由的实现需要用到 React Navigation，因此在使用前需要调用命令 yarn add react-navigation 安装该包。这样就可以使用该包 下的导航组件了。
+    路由的实现需要用到 React Navigation，因此在使用前需要调用命令 yarn add react-navigation 安装该包。这样就可以使用该包下的导航组件了。
 
     首先为了统一管理页面组件，在 navigte 目录下新建 AppStack.js，在该文件下创建路由组件，将每个需要跳转的页面注册到该路由中，由于 app 启动的第一个页面是启动组件，因此将路由的 initialRouteName 属性设置为启动页面，代码如下：
 
@@ -191,20 +191,23 @@ React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 
     ```
      然后将路由组件 RootStack 需要添加到 App.js 中的 App 组件里面。代码如下：
     ```
+    //引入路由组件
+    import { RootStack } from './app/navigate/AppStack';
     export default class App extends Component {
     constructor(props) {
-    super(props);
+      super(props);
     
     }
-    render() {
-    return (
-      <RootStack />
-            );
-        }
+      render() {
+        return (
+          <RootStack />
+        );
+      }
     }
     ```
 
     这样当应用启动的时候，应用呈现的第一个页面便是启动组件的内容。
+
 - 启动组件（ SplashView.js ）
 
     该组件需要实现以下功能，设置一张启动页面的图片，及设置一秒延时跳转到下一个页面，当应用第一次启动需要跳转到登陆页面，登陆完成之后当下一次启动直接跳转到首页。
@@ -243,12 +246,11 @@ React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 
 
 - 登陆组件（ LoginView.js ）
 
-    登陆组件主要实现账号输入框宫功能及密码输入框功能，登陆功能和跳转注册组件的功能。
+    登陆组件主要实现账号输入框功能及密码输入框功能，登陆功能和跳转注册组件的功能。
 
     最终页面效果如下:
 
-    ![图5-5](https://note.youdao.com/yws/api/personal/file/A1124736634040859E60E6912D4BC3F7?method=download&shareKey=8b5ee5636bf2d9daec0076dd7e2a0048)
-
+    ![图5-5](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/1.png)
 
    布局代码主要用 TextInput 组件及 TouchableOpacity 组件实现,代码如下:
 ​    
@@ -302,7 +304,7 @@ React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 
     }
 }
  ```
- 当输入框的内容变化时分别调用 onChangeTextUserName 和 onChangeTextPsw 方法，并将变化的值，通过 setState 方法重新设置给 state 中的 userName 和 psw 字段，会触发Render方法重新渲染。
+ 当输入框的内容变化时分别调用 onChangeTextUserName 和 onChangeTextPsw 方法，并将变化的值，通过 setState 方法重新设置给 state 中的 userName 和 psw 字段，会触发 Render 方法重新渲染。
 
 onChangeTextUserName 方法：
 
@@ -327,7 +329,7 @@ onChangeTextPsw = (text) => {
     })
 }
 ```
-另外如果app不是第一登陆需要先获取之前存储的 userName 并设置给 state 中的 userName 属性，实现如下代码:
+另外如果 app 不是第一登陆需要先获取之前存储的 userName 并设置给 state 中的 userName 属性，实现如下代码:
 ```
  componentDidMount() {
     AsyncStorageUtil.getValue("userName", (error, result) => {
@@ -374,7 +376,7 @@ onPress = () => {
 
     最终页面效果如下:
 
-    ![图5-6](https://note.youdao.com/yws/api/personal/file/F29AF56D62254C809B8FC768BF122B6C?method=download&shareKey=9b532e5974e0d46c05ff569094954720)
+    ![图5-2](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/2.png)
   
     布局主要由两个 TextInput 组件及 TouchableOpacity 组件实现，代码如下：
     ```
@@ -422,7 +424,7 @@ onPress = () => {
                         source={require('../../img/register_btn.png')} />
 
                 </TouchableOpacity>
-            </View>
+    	</View>
     ```
     注册账号的输入框与注册密码的输入框功能:
     
@@ -447,7 +449,7 @@ onPress = () => {
     ```
     注册功能:
     
-    当点击注册按钮时，校验注册账号密码非空，然后回退到登陆页面。
+    当点击注册按钮时，校验注册账号密码非空，注册成功，然后回退到登陆页面。
     ```
     /**
      * 注册
@@ -469,15 +471,15 @@ onPress = () => {
 
 ###### 5.2.2 首页
 
-首页包含了底部的 TabBar 和书单列表页面两部分。底部的 TabBar 的实现使用 React Navigation 的 createBottomTabNavigator 实现。书单 ShuDanView 组件，列表头部的标签使用 react-native-scrollable-tab-view 这个库实现，对于该库具体的使用可以在github上搜索该库，查找详细的使用方法，这里只介绍用到属性和方法。另外为了将标签的逻辑和列表的逻辑抽离，在view目录下的书单目录中创建 ShuDanListView.js 文件，将列表功能的逻辑抽取到 ShuDanListView 组件中。
+首页包含了底部的 TabBar 和书单列表页面两部分。底部的 TabBar 的实现使用 React Navigation 的 createBottomTabNavigator 实现。书单 ShuDanView 组件的列表头部的标签使用 react-native-scrollable-tab-view 这个库实现，对于该库具体的使用可以在github上搜索该库，查找详细的使用方法，这里只介绍用到属性和方法。另外为了将标签的逻辑和列表的逻辑抽离，在view目录下的书单目录中创建 ShuDanListView.js 文件，将列表功能的逻辑抽取到 ShuDanListView 组件中。
 
 效果图如下:
 
-![图5-7](https://note.youdao.com/yws/api/personal/file/1DC05175A02A498F9D4310A5BF283BC3?method=download&shareKey=b3f69e4d650150be78bd7d4318fcfed9)
+![图5-3](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/3.jpg)
 
 - 底部组件（TabBottomBar）
   
-   在 AppStack.js 中创建底部导航,创建导航使用上述提到的 createBottomTabNavigator，将底部的书单页面和我的页面注册到该底部导航中，然后设置各自的 navigationOptions 属性例如图标，文字等。然后将 TabBottomBar 组件像登陆和启动页面一样需要注册到RootStack这个路由组件中。代码如下:
+   在 AppStack.js 中创建底部导航,创建导航使用上述提到的 createBottomTabNavigator，将底部的书单页面和我的页面注册到该底部导航中，然后设置各自的 navigationOptions 属性例如图标，文字等。然后将 TabBottomBar 组件像登陆和启动页面一样需要注册到 RootStack 这个路由组件中。代码如下:
     ```
     export const TabBottomBar = createBottomTabNavigator({
     ShuDan: {
@@ -487,7 +489,7 @@ onPress = () => {
       tabBarLabel: '首页',
 
       tabBarIcon: ({ focused, tintColor }) => {
-        let imgSource = focused ? require('../img/icon2.png') : require('../img/home_unselect.png');
+        let imgSource = focused ? require('../img/icon2.png') : 			   			require('../img/home_unselect.png');
         return <Image
           style={{ width: 25, height: 25 }} source={imgSource} />;
       }
@@ -652,8 +654,8 @@ onPress = () => {
 account 目录下创建 MeView.js ,作为个人中心页面的组件。 个人中心页面主要显示个人的信息功能，因此这个页面主要是显示功能，侧重布局功能，无其他业务逻辑。
 
 效果图:
-​    
-![图 5-9](https://note.youdao.com/yws/api/personal/file/6F1E907FFAA64B728D852F2150E68339?method=download&shareKey=f307871146d08a7aed9eddb7125321f0)
+    
+![图 5-4](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/4.png)
 
 
 布局使用图片做背景时，使用了 ImageBackground 组件，代码如下:
@@ -721,7 +723,7 @@ account 目录下创建 MeView.js ,作为个人中心页面的组件。 个人�
 
 效果图如下:
 
-![图 5-10](https://note.youdao.com/yws/api/personal/file/F8EA7B92888C407794AFCA28B8EA7337?method=download&shareKey=364a69ca81acaa4c6209c564dc033a7f)
+![图 5-5](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/5.png)
 
 布局实现是 ScrollView 嵌套 FlatList，底部是评论框部分代码如下:
 ```
@@ -862,7 +864,7 @@ onChangeText = (str) => {
 
 }
 ```
-点击发送按钮的时候调用 onPress 方法,首先判断了 text 的值是否为空，若为空直接返回，不为空和组装了下数据对象并调用 setState 方法重新渲染页面。
+点击发送按钮的时候调用 onPress 方法,首先判断了 text 的值是否为空，若为空直接返回，不为空，调用数组的 concat 方法添加数据并调用 setState 方法重新渲染页面。
 
 ```
 /**
@@ -883,11 +885,11 @@ if (isEmpty(this.state.text)) {
 ###### 5.2.5 侧滑页面
 
 
-侧滑页面使用 React Navigation中 的 createDrawerNavigator 创建，因此在 AppStack.js 中创建一个侧滑组件。另外需要将侧滑组件和 TabBottomBar 组件结合起来。
+侧滑页面使用 React Navigation 中 的 createDrawerNavigator 创建，因此在 AppStack.js 中创建一个侧滑组件。另外需要将侧滑组件和 TabBottomBar 组件结合起来。
 
 效果图：
 
-![图5-11](https://note.youdao.com/yws/api/personal/file/3DCB19DBE4754841B4CFB670ADD8AE71?method=download&shareKey=4c434d5158fd1622447e0d4b3568d820)
+![图5-6](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/6.png)
 
 创建侧滑组件:
 
@@ -938,7 +940,7 @@ export const RootStack = createDrawerNavigator({
   }
 })
 ```
-DrawerView组件：
+DrawerView 组件：
 
 布局代码如下:
 ```
@@ -1017,9 +1019,9 @@ DrawerView组件：
 
 3.生成apk
 
-在终端的项目根目录下输入 cd android，进入 android 目录中，再调用 ./gradlew assembleRelease 命令，在 macOs,Linux 或是 windows 下的powerShell环境中，./ 不可以省略，在 windows 下的 cmd 命令行中需要去掉。最终会在 android/app/build/outputs/apk 目录下生成 app-release.apk 文件，这个文件就是最终的签名文件。如下图:
+在终端的项目根目录下输入 cd android，进入 android 目录中，再调用 ./gradlew assembleRelease 命令，在 macOs,Linux 或是 windows 下的 powerShell 环境中，./ 不可以省略，在 windows 下的 cmd 命令行中需要去掉。最终会在 android/app/build/outputs/apk 目录下生成 app-release.apk 文件，这个文件就是最终的签名文件。如下图:
 
-![Image](https://note.youdao.com/yws/api/personal/file/4D068CC3B34045A58BBF8470445041FC?method=download&shareKey=6d3c1b300329a6b268956618d8125f76)
+![图5-7](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/7.png)
 
 ###### iOS 打包
 1. 生成 bundle 文件

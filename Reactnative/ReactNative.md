@@ -137,7 +137,7 @@ React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 
     首先为了统一管理页面组件，在 navigte 目录下新建 AppStack.js，在该文件下创建路由组件，将每个需要跳转的页面注册到该路由中，由于 app 启动的第一个页面是启动组件，因此将路由的 initialRouteName 属性设置为启动页面，代码如下：
 
     ```
-    export const StackNavigator = createStackNavigator(
+    export const RootStack = createStackNavigator(
     {
     Splash: {
       screen: SplashView,
@@ -372,7 +372,7 @@ onPress = () => {
 ​    
 - 注册页面（ RegisterView.js ）
   
-    注册页面主要由，注册账号的输入框和注册密码的输入框功能，注册功能。
+    注册页面主要有注册账号的输入框和注册密码的输入框功能，注册功能。
 
     最终页面效果如下:
 
@@ -725,7 +725,7 @@ account 目录下创建 MeView.js ,作为个人中心页面的组件。 个人�
 
 ![图 5-5](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/5.png)
 
-布局实现是 ScrollView 嵌套 FlatList，底部是评论框部分代码如下:
+布局实现是 ScrollView 嵌套 FlatList，布局部分代码如下:
 ```
 <View style={[CommonStyle.root]}>
     <ScrollView >
@@ -885,7 +885,7 @@ if (isEmpty(this.state.text)) {
 ###### 5.2.5 侧滑页面
 
 
-侧滑页面使用 React Navigation 中 的 createDrawerNavigator 创建，因此在 AppStack.js 中创建一个侧滑组件。另外需要将侧滑组件和 TabBottomBar 组件结合起来。
+侧滑页面使用 React Navigation 中 的 createDrawerNavigator 创建，因此在 AppStack.js 中创建一个侧滑组件。另外需要用 createDrawerNavigator 生成的侧滑组件将之前用 createStackNavigator 创建的组件 "包裹" 起来。
 
 效果图：
 
@@ -893,15 +893,40 @@ if (isEmpty(this.state.text)) {
 
 创建侧滑组件:
 
-在首页中的页面中，使用 createBottomTabNavigator 创建了 TabBottomBar 组件，然后将 TabBottomBar 组件注册到了 StackNavigator 中,实现侧滑，需要在 StackNavigator 外再使用一层 DrawerNavigator 。代码如下。
+将之前用 createStackNavigator 生成的组件名修改为 StackNavigator。createDrawerNavigator 创建的组件名 RootStack，使用 createDrawerNavigator 创建侧滑组件，将 StackNavigator 组件添加进去，另外需要设置侧滑组件的页面，使用 navigationOptions 下的 drawerLabel 属性，它的值可以是一个字符串或者一个组件。在view目录下的 drawer 目录中 DrawerView.js 中创建 DrawerView 组件，并导入到 AppStack.js 中。
 ```
 export const StackNavigator = createStackNavigator(
   {
-    Splash: SplashView,
-    Login: LoginView,
-    Register: RegisterView,
-    ShuDanDetail: ShuDanDetailView,
-    Tab:  TabBottomBar  
+    Splash: {
+      screen: SplashView,
+      navigationOptions: {
+        header: null
+      }
+    },
+    Login: {
+      screen: LoginView,
+      navigationOptions: {
+        header: null
+      }
+    },
+    Register: {
+      screen: RegisterView,
+      navigationOptions: {
+        title: '注册'
+      }
+    },
+    ShuDanDetail: {
+      screen: ShuDanDetailView,
+      navigationOptions: {
+        title: '书单详情'
+      }
+    },
+    Tab: {
+      screen: TabBottomBar,
+      navigationOptions: {
+        header: null
+      }
+    }
   },
   {
     initialRouteName: 'Splash',
@@ -914,32 +939,24 @@ export const StackNavigator = createStackNavigator(
       headerTitleStyle: {
         fontWeight: 'bold',
         flex: 1,
-        textAlign:'center'
-      }
+        textAlign: 'center',
+        fontSize: 18
+      },
+      headerRight: <View />
     }
   }
 );
+
 export const RootStack = createDrawerNavigator({
   Tab: {
     screen: StackNavigator,
-    navigationOptions :{
-      drawerLabel: <DrawerView/>
+    navigationOptions: {
+      drawerLabel: <DrawerView />
     }
   }
 })
 ```
 
-使用 createDrawerNavigator 创建侧滑组件，将之前使用 StackNavigator 创建的组件添加进去，另外需要设置侧滑组件的页面，使用 navigationOptions 下的 drawerLabel 属性，它的值可以是一个字符串或者一个组件。在view目录下的 drawer 目录中 DrawerView.js 中创建 DrawerView 组件，导入到 AppStack.js 中。
-```
-export const RootStack = createDrawerNavigator({
-  Tab: {
-    screen: StackNavigator,
-    navigationOptions :{
-      drawerLabel: <DrawerView/>
-    }
-  }
-})
-```
 DrawerView 组件：
 
 布局代码如下:
@@ -971,7 +988,7 @@ DrawerView 组件：
 
 ###### 5.3.1 安卓打包
 在发布应用的时候，需要生成一个带签名的 apk ，在安卓中生成签名有两种方式，一种利用 AndroidStudio 的可视化界面生成签名，另外一种使用jdk下的bin目录中 keytool 工具生成一个签名。本章只对命令行方式说明如何生成签名。
-1. 调出命令行，可能需要进入到安装 jdk 目录下的 bin 目录，在命令行中输入如下命令:
+1. 调出命令行，进入到安装 jdk 目录下的 bin 目录，在命令行中输入如下命令:
     ```
     keytool -genkey -v -keystore D:\work_android\ShuDanApp\ShuDanApp\shudan.keystore -alias shudan-alias -keyalg RSA -keysize 2048 -validity 10000
     ```
@@ -993,7 +1010,7 @@ DrawerView 组件：
         KEY_ALIAS_PASSWORD=123456
         ```
 
-    - 在 android/app/build.gradle 中配置签名，在 android 域下添加 signingConfigs 配置，并且在 buildTypes 中的 release 域中配置 signingConfig 。然后输入 release 包时就使用 signingConfigs 下 release 配置的签名信息。
+    - 在 android/app/build.gradle 中配置签名，在 android 域下添加 signingConfigs 配置，并且在 buildTypes 中的 release 域中配置 signingConfig 。然后输出 release 包时就使用 signingConfigs 下 release 配置的签名信息。
 
         ```
         android {

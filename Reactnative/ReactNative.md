@@ -1,6 +1,8 @@
+#### 5.1 项目结构
+
 相信通过之前的入门章节，开发者已经对 React Native 有了基本的了解和使用，在这一章节会通过实战项目开发一个完整的 app,主要功能包含启动页，登陆页，注册页，首页，个人中心页，书单详情页，侧滑页。
 
-###### 5.1.1 创建项目
+###### 5.1.1  创建项目
 
 在开发项目之前需要选择一款开发工具，在这里推荐使用 Visual Studio Code 作为开发 Reat Native 的工具，也可以选择使用其他的开发工具。
 
@@ -8,7 +10,7 @@
 
 1. 创建项目
 
-    在这次实战项目中是基于 React Native 0.55 版本,在某个文件夹下打开命令行，调用 **react-native init ShuDanApp --version 0.55.0**。当指定使用ReactNative的某个版本的时候必须精确到两个小数点。
+    在这次实战项目中是基于 React Native 0.55 版本,在某个文件夹下打开命令行，调用 **react-native init ShuDanApp --version 0.55.0**。当指定使用 React Native 的某个版本的时候必须精确到两个小数点。
 
 2. 运行项目
   
@@ -16,7 +18,7 @@
 
 实战项目创建完成。
 
-###### 5.1.2 项目结构介绍
+###### 5.1.2 项目目录介绍
 React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 js 部分,项目结构如下:
 
 ```
@@ -50,210 +52,213 @@ React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 
 ```
 
 1. index.js
-    ```
-    import { AppRegistry } from 'react-native';
-    import App from './App';
-    AppRegistry.registerComponent('ShuDanApp', () => App);
-    ```
 
-    该文件是整个程序的入口,在这个文件中会将 App.js 创建的组件注册进来。
+```
+import { AppRegistry } from 'react-native';
+import App from './App';
+AppRegistry.registerComponent('ShuDanApp', () => App);
+```
 
- 2. App.js
+该文件是整个程序的入口,在这个文件中会将 App.js 创建的组件注册进来。
 
-    ```
-    export default class App extends Component {
-    	...
-    	render() {
-    	return (
-      	<RootStack />
-          	 		);
-      	 	}	
-    	}
-    ```
+2. App.js
 
-    该文件是整个程序的初始组件，这个组件会在index.js中进行注册。
+```
+export default class App extends Component {
+	...
+	render() {
+	return (
+  	<RootStack />
+      	 		);
+  	 	}	
+	}
+```
+
+该文件是整个程序的初始组件，这个组件会在index.js中进行注册。
 
 3. android 目录
 
-    在该文件夹下会生成一个 Android 项目工程。
+在该文件夹下会生成一个 Android 项目工程。
 
 4. ios 目录
 
-    在该文件夹下会生成一个 iOS 项目的工程。
+在该文件夹下会生成一个 iOS 项目的工程。
 
 5. app 目录
 
-    为了将项目的 React Native 页面放置在一个目录中，在项目的根目录新建了一个名称为 app 的文件夹作为存放 React Native 页面的目录。在这个目录结构下根据不同的业务模块对目录进行了分层。具体的分层:
+为了将项目的 React Native 页面放置在一个目录中，在项目的根目录新建了一个名称为 app 的文件夹作为存放 React Native 页面的目录。在这个目录结构下根据不同的业务模块对目录进行了分层。具体的分层:
 
-    层级目录 | 功能
-    :--|---
-    common | 公用的样式文件和公用的常量文件等
-    component | 抽取的功能组件
-    img| 项目中使用的图片资源
-    navigate| 对路由统一管理的目录
-    util| 工具文件目录 
-    view| 页面文件的目录，在这个目录下会根据具体提的业务划分不同的目录 
+层级目录 | 功能
+:--|---
+common | 公用的样式文件和公用的常量文件等
+component | 抽取的功能组件
+img| 项目中使用的图片资源
+navigate| 对路由统一管理的目录
+util| 工具文件目录 
+view| 页面文件的目录，在这个目录下会根据具体提的业务划分不同的目录 
 
 6. package.json
 
-    这个文件下的内容主要是 npm 需要执行的脚本，和依赖包的名称和版本号。   
+这个文件下的内容主要是 npm 需要执行的脚本，和依赖包的名称和版本号。   
 
-    ```
-    {
-        "name": "ShuDanApp",
-        "version": "0.0.1",
-        "private": true,
-        "scripts": {
-        "start": "node node_modules/react-native/local-cli/cli.js start",
-        "test": "jest",
-        "bundle-ios":"node node_modules/react-native/local-cli/cli.js bundle --entry-file 	index.js --platform ios --dev false --bundle-output ./ios/bundle/index.ios.jsbundle --assets-dest ./ios/bundle"
-        },
-        "dependencies": {
-        "react": "16.3.0-alpha.0",
-        "react-native": "0.55.0",
-        "react-native-scrollable-tab-view": "^0.8.0",
-        "react-navigation": "^2.11.2"
-        },
-        "devDependencies": {
-        "babel-jest": "23.4.2",
-        "babel-preset-react-native": "4.0.0",
-        "jest": "23.5.0",
-        "react-test-renderer": "16.3.0-alpha.0"
-        },
-        "jest": {
-        "preset": "react-native"
-            }
+```
+{
+    "name": "ShuDanApp",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest",
+    "bundle-ios":"node node_modules/react-native/local-cli/cli.js bundle --entry-file 	index.js --platform ios --dev false --bundle-output ./ios/bundle/index.ios.jsbundle --assets-dest ./ios/bundle"
+    },
+    "dependencies": {
+    "react": "16.3.0-alpha.0",
+    "react-native": "0.55.0",
+    "react-native-scrollable-tab-view": "^0.8.0",
+    "react-navigation": "^2.11.2"
+    },
+    "devDependencies": {
+    "babel-jest": "23.4.2",
+    "babel-preset-react-native": "4.0.0",
+    "jest": "23.5.0",
+    "react-test-renderer": "16.3.0-alpha.0"
+    },
+    "jest": {
+    "preset": "react-native"
         }
-    ```
+    }
+```
 
-    ###### 5.2.1 登录注册
+#### 5.2 项目实战
 
-    在 view 的目录下创建一个名叫 login 的文件夹，并在这个目录下创建三个文件 LoginView.js  (登陆组件), SplashView.js  (启动组件)，RegisterView.js  (注册组件)。这一部分功能需要实现启动页面组件，登陆页面组件，注册页面组件以及页面间跳转的路由。
+###### 5.2.1 登录、注册页面
 
-- 路由（ AppStack.js ）
+在 view 的目录下创建一个名叫 login 的文件夹，并在这个目录下创建三个文件 LoginView.js  (登陆组件), SplashView.js  (启动组件)，RegisterView.js  (注册组件)。这一部分功能需要实现启动页面组件，登陆页面组件，注册页面组件以及页面间跳转的路由。
 
-    路由的实现需要用到 React Navigation，因此在使用前需要调用命令 yarn add react-navigation 安装该包。这样就可以使用该包下的导航组件了。
+路由（ AppStack.js ）
 
-    首先为了统一管理页面组件，在 navigte 目录下新建 AppStack.js，在该文件下创建路由组件，将每个需要跳转的页面注册到该路由中，由于 app 启动的第一个页面是启动组件，因此将路由的 initialRouteName 属性设置为启动页面，代码如下：
+路由的实现需要用到 React Navigation，因此在使用前需要调用命令 yarn add react-navigation 安装该包。这样就可以使用该包下的导航组件了。
 
-    ```
-    export const RootStack = createStackNavigator(
-    {
-    Splash: {
-      screen: SplashView,
-      navigationOptions: {
-        header: null
-      }
-    },
-    Login: {
-      screen: LoginView,
-      navigationOptions: {
-        header: null
-      }
-    },
-    Register: {
-      screen: RegisterView,
-      navigationOptions: {
-        title: '注册'
-      }
-    },
-    ShuDanDetail: {
-      screen: ShuDanDetailView,
-      navigationOptions: {
-        title: '书单详情'
-      }
-    },
-    Tab: {
-      screen: TabBottomBar,
-      navigationOptions: {
-        header: null
-            }
+首先为了统一管理页面组件，在 navigte 目录下新建 AppStack.js，在该文件下创建路由组件，将每个需要跳转的页面注册到该路由中，由于 app 启动的第一个页面是启动组件，因此将路由的 initialRouteName 属性设置为启动页面，代码如下：
+
+```
+export const RootStack = createStackNavigator(
+{
+Splash: {
+  screen: SplashView,
+  navigationOptions: {
+    header: null
+  }
+},
+Login: {
+  screen: LoginView,
+  navigationOptions: {
+    header: null
+  }
+},
+Register: {
+  screen: RegisterView,
+  navigationOptions: {
+    title: '注册'
+  }
+},
+ShuDanDetail: {
+  screen: ShuDanDetailView,
+  navigationOptions: {
+    title: '书单详情'
+  }
+},
+Tab: {
+  screen: TabBottomBar,
+  navigationOptions: {
+    header: null
         }
-    },
-    {
-    initialRouteName: 'Splash',
-    navigationOptions: {
-      headerStyle: {
-        backgroundColor: '#353535',
-        height: 44
-      },
-      headerTintColor: '#FFFFFF',
-      headerTitleStyle: {
-        fontWeight: 'bold',
-        flex: 1,
-        textAlign: 'center',
-        fontSize: 18
-      },
-      headerRight: <View />
-            }
+    }
+},
+{
+initialRouteName: 'Splash',
+navigationOptions: {
+  headerStyle: {
+    backgroundColor: '#353535',
+    height: 44
+  },
+  headerTintColor: '#FFFFFF',
+  headerTitleStyle: {
+    fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 18
+  },
+  headerRight: <View />
         }
+    }
+);
+```
+ 然后将路由组件 RootStack 需要添加到 App.js 中的 App 组件里面。代码如下：
+```
+//引入路由组件
+import { RootStack } from './app/navigate/AppStack';
+export default class App extends Component {
+constructor(props) {
+  super(props);
+
+}
+  render() {
+    return (
+      <RootStack />
     );
-    ```
-     然后将路由组件 RootStack 需要添加到 App.js 中的 App 组件里面。代码如下：
-    ```
-    //引入路由组件
-    import { RootStack } from './app/navigate/AppStack';
-    export default class App extends Component {
-    constructor(props) {
-      super(props);
-    
-    }
-      render() {
-        return (
-          <RootStack />
-        );
-      }
-    }
-    ```
+  }
+}
+```
 
-    这样当应用启动的时候，应用呈现的第一个页面便是启动组件的内容。
+这样当应用启动的时候，应用呈现的第一个页面便是启动组件的内容。
 
-- 启动组件（ SplashView.js ）
+启动组件（ SplashView.js ）
 
-    该组件需要实现以下功能，设置一张启动页面的图片，及设置一秒延时跳转到下一个页面，当应用第一次启动需要跳转到登陆页面，登陆完成之后当下一次启动直接跳转到首页。
+该组件需要实现以下功能，设置一张启动页面的图片，及设置一秒延时跳转到下一个页面，当应用第一次启动需要跳转到登陆页面，登陆完成之后当下一次启动直接跳转到首页。
 
-    布局主要由一个根 View 组件嵌套一个 Image 组件。代码如下：
-     ```
-    <View style={styles.root}>
-        <Image source={require('../../img/default.png')} />
-    </View>
-     ```
+布局主要由一个根 View 组件嵌套一个 Image 组件。代码如下：
+```
+<View style={styles.root}>
+    <Image source={require('../../img/default.png')} />
+</View>
+```
 
-     跳转逻辑主要实现，在 componentDidMount 方法中设置1秒延时的定时器，在跳转页面前先从 AsyncStorageUtil 中获取userName，AsyncStorageUtil 是对 AsyncStorage 这个异步存储的 api 的简单封装。若获取到这个存储的值，说明不是第一次登陆，跳转到首页，若为空，说明是第一登陆或者存储的值当退出登陆的时候被清除了，需要跳转到登陆页面。另外当组件销毁的时候需要清除定时器，代码如下:
-    ```
-     /**
-     * 设置定时器
-     */
-    componentDidMount() {
-        this.timer = setTimeout(() => {
-            AsyncStorageUtil.getValue("userName", (error, result) => {
-                if (result) {
-                   this.props.navigation.navigate('Tab');
-                }else{
-                    this.props.navigation.navigate('Login');
-                }
-            });
-    
-        }, 1000);
-    }
-    /**
-     * 清除定时器
-     */
-    componentWillUnmount() {
-        this.timer && clearTimeout(this.timer);
-    }
-    ```
+ 跳转逻辑主要实现，在 componentDidMount 方法中设置1秒延时的定时器，在跳转页面前先从 AsyncStorageUtil 中获取userName，AsyncStorageUtil 是对 AsyncStorage 这个异步存储的 api 的简单封装。若获取到这个存储的值，说明不是第一次登陆，跳转到首页，若为空，说明是第一登陆或者存储的值当退出登陆的时候被清除了，需要跳转到登陆页面。另外当组件销毁的时候需要清除定时器，代码如下:
+```
+ /**
+ * 设置定时器
+ */
+componentDidMount() {
+    this.timer = setTimeout(() => {
+        AsyncStorageUtil.getValue("userName", (error, result) => {
+            if (result) {
+               this.props.navigation.navigate('Tab');
+            }else{
+                this.props.navigation.navigate('Login');
+            }
+        });
+
+    }, 1000);
+}
+/**
+ * 清除定时器
+ */
+componentWillUnmount() {
+    this.timer && clearTimeout(this.timer);
+}
+```
 
 - 登陆组件（ LoginView.js ）
 
-    登陆组件主要实现账号输入框功能及密码输入框功能，登陆功能和跳转注册组件的功能。
 
-    最终页面效果如下:
+登陆组件主要实现账号输入框功能及密码输入框功能，登陆功能和跳转注册组件的功能。
 
-    ![图5-5](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/1.png)
+最终页面效果如下:
 
-   布局代码主要用 TextInput 组件及 TouchableOpacity 组件实现,代码如下:
-​    
+![图5-5](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/1.png)
+
+布局代码主要用 TextInput 组件及 TouchableOpacity 组件实现,代码如下:
 
 ```
 <View style={[CommonStyle.root, { backgroundColor: '#FFFFFF' }]}>
@@ -287,10 +292,8 @@ React Native 项目主要由 Android 工程，iOS 工程，及 React Native 的 
             style={{ marginTop: 26, alignItems: 'center' }}>
             <Image source={require('../../img/login_btn.png')} />
        </TouchableOpacity>
-    </View>
+    </View>      
 ```
-
-​      
 
 账号及密码输入框功能：
 
@@ -368,110 +371,109 @@ onPress = () => {
 }
 ```
 
+- 
+  注册页面（ RegisterView.js ）
 
-​    
-- 注册页面（ RegisterView.js ）
-  
-    注册页面主要有注册账号的输入框和注册密码的输入框功能，注册功能。
+注册页面主要有注册账号的输入框功能和注册密码的输入框功能，注册功能。
 
-    最终页面效果如下:
+最终页面效果如下:
 
-    ![图5-2](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/2.png)
-  
-    布局主要由两个 TextInput 组件及 TouchableOpacity 组件实现，代码如下：
-    ```
-      <View style={[CommonStyle.root, { backgroundColor: '#FFFFFF' }]}>
-                <View
-                    style={{ alignItems: 'center', marginBottom: 45 }}>
-                    <Image
-                        source={require('../../img/register_header.png')}
-                        style={{ marginTop: 45, marginBottom: 45 }} />
-                    <Text
-                        style={{ color: '#636362', fontSize: 18 }}>
-                        您好
-                    </Text>
-                    <Text
-                        style={{ color: '#636362', fontSize: 14, marginTop: 10 }}>
-                        欢迎来到注册页面
-                    </Text>
-                </View>
+![图5-2](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/2.png)
 
-                <TextInput
-                    style={styles.input}
-                    numberOfLines={1}
-                    placeholder={'请输入账号'}
-                    placeholderTextColor={'#828181'}
-                    underlineColorAndroid="transparent"
-                    onChangeText={this.onChangeTextUserName}
-                    value={this.state.userName}
-                />
+布局主要由两个 TextInput 组件及 TouchableOpacity 组件实现，代码如下：
+```
+  <View style={[CommonStyle.root, { backgroundColor: '#FFFFFF' }]}>
+            <View
+                style={{ alignItems: 'center', marginBottom: 45 }}>
+                <Image
+                    source={require('../../img/register_header.png')}
+                    style={{ marginTop: 45, marginBottom: 45 }} />
+                <Text
+                    style={{ color: '#636362', fontSize: 18 }}>
+                    您好
+                </Text>
+                <Text
+                    style={{ color: '#636362', fontSize: 14, marginTop: 10 }}>
+                    欢迎来到注册页面
+                </Text>
+            </View>
 
-                <TextInput
-                    style={styles.input}
-                    numberOfLines={1}
-                    placeholder={'请输入密码'}
-                    placeholderTextColor={'#828181'}
-                    underlineColorAndroid="transparent"
-                    onChangeText={this.onChangeTextPsw}
-                    value={this.state.psw}
-                />
+            <TextInput
+                style={styles.input}
+                numberOfLines={1}
+                placeholder={'请输入账号'}
+                placeholderTextColor={'#828181'}
+                underlineColorAndroid="transparent"
+                onChangeText={this.onChangeTextUserName}
+                value={this.state.userName}
+            />
 
-                <TouchableOpacity
-                    onPress={() => this.onRegisterPress()}
-                    style={{ marginTop: 26, alignItems: 'center' }}>
+            <TextInput
+                style={styles.input}
+                numberOfLines={1}
+                placeholder={'请输入密码'}
+                placeholderTextColor={'#828181'}
+                underlineColorAndroid="transparent"
+                onChangeText={this.onChangeTextPsw}
+                value={this.state.psw}
+            />
 
-                    <Image
-                        source={require('../../img/register_btn.png')} />
+            <TouchableOpacity
+                onPress={() => this.onRegisterPress()}
+                style={{ marginTop: 26, alignItems: 'center' }}>
 
-                </TouchableOpacity>
-    	</View>
-    ```
-    注册账号的输入框与注册密码的输入框功能:
-    
-    当输入框的内容变化时分别调用 onChangeTextUserName 和 onChangeTextPsw 方法，并将变化的值，通过 setState 方法重新设置给 state 中的 userName 和 psw 属性，接着触发 Render 方法重新渲染。
-    ```
-    /**
-    * 账号输入
-    */
-    onChangeTextUserName = (text) => {
-        this.setState({
-            userName: text
-        })
+                <Image
+                    source={require('../../img/register_btn.png')} />
+
+            </TouchableOpacity>
+	</View>
+```
+注册账号的输入框与注册密码的输入框功能:
+
+当输入框的内容变化时分别调用 onChangeTextUserName 和 onChangeTextPsw 方法，并将变化的值，通过 setState 方法重新设置给 state 中的 userName 和 psw 属性，接着触发 Render 方法重新渲染。
+```
+/**
+* 账号输入
+*/
+onChangeTextUserName = (text) => {
+    this.setState({
+        userName: text
+    })
+}
+/**
+* 密码输入
+*/
+onChangeTextPsw = (text) => {
+    this.setState({
+        psw: text
+    })
+}
+```
+- 注册功能:
+
+
+当点击注册按钮时，校验注册账号密码非空，注册成功，然后回退到登陆页面。
+```
+/**
+ * 注册
+ */
+onRegisterPress = () => {
+    if (isEmpty(this.state.userName)) {
+        toastShort("账号不能为空");
+        return;
     }
-    /**
-    * 密码输入
-    */
-    onChangeTextPsw = (text) => {
-        this.setState({
-            psw: text
-        })
+    if (isEmpty(this.state.psw)) {
+        toastShort("密码不能为空");
+        return;
     }
-    ```
-    注册功能:
-    
-    当点击注册按钮时，校验注册账号密码非空，注册成功，然后回退到登陆页面。
-    ```
-    /**
-     * 注册
-     */
-    onRegisterPress = () => {
-        if (isEmpty(this.state.userName)) {
-            toastShort("账号不能为空");
-            return;
-        }
-        if (isEmpty(this.state.psw)) {
-            toastShort("密码不能为空");
-            return;
-        }
-        toastShort("注册成功");
-        this.props.navigation.goback();
-    }
-    ```
-    
+    toastShort("注册成功");
+    this.props.navigation.goback();
+}
+```
 
 ###### 5.2.2 首页
 
-首页包含了底部的 TabBar 和书单列表页面两部分。底部的 TabBar 的实现使用 React Navigation 的 createBottomTabNavigator 实现。书单 ShuDanView 组件的列表头部的标签使用 react-native-scrollable-tab-view 这个库实现，对于该库具体的使用可以在github上搜索该库，查找详细的使用方法，这里只介绍用到属性和方法。另外为了将标签的逻辑和列表的逻辑抽离，在view目录下的书单目录中创建 ShuDanListView.js 文件，将列表功能的逻辑抽取到 ShuDanListView 组件中。
+首页包含了底部的 TabBar 和书单列表页面两部分。底部的 TabBar 的实现使用 React Navigation 的 createBottomTabNavigator 实现。书单 ShuDanView 组件的列表头部的标签使用 react-native-scrollable-tab-view 这个库实现，对于该库具体的使用可以在 github 上搜索该库，查找详细的使用方法，这里只介绍用到属性和方法。另外为了将标签的逻辑和列表的逻辑抽离，在 view 目录下的 shudan 目录中创建 ShuDanListView.js 文件，将列表功能的逻辑抽取到 ShuDanListView 组件中。
 
 效果图如下:
 
@@ -479,7 +481,7 @@ onPress = () => {
 
 - 底部组件（TabBottomBar）
   
-   在 AppStack.js 中创建底部导航,创建导航使用上述提到的 createBottomTabNavigator，将底部的书单页面和我的页面注册到该底部导航中，然后设置各自的 navigationOptions 属性例如图标，文字等。然后将 TabBottomBar 组件像登陆和启动页面一样需要注册到 RootStack 这个路由组件中。代码如下:
+   在 AppStack.js 中创建底部导航,创建导航使用上述提到的 createBottomTabNavigator，将底部的书单页面组件和我的页面组件注册到该底部导航中，然后设置各自的 navigationOptions 属性例如图标，文字等。然后将 TabBottomBar 组件像登陆和启动页面一样需要注册到 RootStack 这个路由组件中。代码如下:
     ```
     export const TabBottomBar = createBottomTabNavigator({
     ShuDan: {
@@ -718,7 +720,7 @@ account 目录下创建 MeView.js ,作为个人中心页面的组件。 个人�
     </View>
 </View>
 ```
-###### 5.2.4 书单详情
+###### 5.2.4 书单详情页面
  shudan 目录下创建 ShuDanDetailView.js ，ShuDanDetailView 组件主要包括书籍评论列表功能，发表评论的功能，这个界面主要采用 ScrollView 和 FlatList 组件实现。
 
 效果图如下:
@@ -784,7 +786,8 @@ account 目录下创建 MeView.js ,作为个人中心页面的组件。 个人�
 </View>
 ```
 
-###### 构造函数:
+构造函数:
+
 在构造函数中，初始化了十条评论数据，并将该页面需要变化的值设置到 state 中，
 
 commentArray:评论列表的值
@@ -848,8 +851,7 @@ getDetail = () => {
 ```
 这样基本就实现了详情的头部跟评论列表部分。接下来实现如何发送评论并更新列表。
 
-
-###### 发表评论
+发表评论
 
 当输入框内容变化时会调用 onChangeText 方法，在该方法中调用 setState 方法设置 text 的值。
 
@@ -885,7 +887,7 @@ if (isEmpty(this.state.text)) {
 ###### 5.2.5 侧滑页面
 
 
-侧滑页面使用 React Navigation 中 的 createDrawerNavigator 创建，因此在 AppStack.js 中创建一个侧滑组件。另外需要用 createDrawerNavigator 生成的侧滑组件将之前用 createStackNavigator 创建的组件 "包裹" 起来。
+侧滑页面组件使用 React Navigation 中 的 createDrawerNavigator 创建，另外需要用 createDrawerNavigator 生成的侧滑组件将之前用 createStackNavigator 创建的组件 "包裹" 起来。
 
 效果图：
 
@@ -893,7 +895,7 @@ if (isEmpty(this.state.text)) {
 
 创建侧滑组件:
 
-将之前用 createStackNavigator 生成的组件名修改为 StackNavigator。createDrawerNavigator 创建的组件名 RootStack，使用 createDrawerNavigator 创建侧滑组件，将 StackNavigator 组件添加进去，另外需要设置侧滑组件的页面，使用 navigationOptions 下的 drawerLabel 属性，它的值可以是一个字符串或者一个组件。在view目录下的 drawer 目录中 DrawerView.js 中创建 DrawerView 组件，并导入到 AppStack.js 中。
+在 AppStack.js 中创建侧滑组件作为根组件，将之前 createStackNavigator 生成的组件名修改为 StackNavigator。createDrawerNavigator 创建的组件作为根组件 RootStack，将 StackNavigator 组件添加进去侧滑组件中，另外需要设置侧滑组件的页面，使用 navigationOptions 下的 drawerLabel 属性，它的值可以是一个字符串或者一个组件。在view目录下的 drawer 目录中 DrawerView.js 中创建 DrawerView 组件，并导入到 AppStack.js 中。
 ```
 export const StackNavigator = createStackNavigator(
   {
@@ -986,53 +988,57 @@ DrawerView 组件：
 </View>
 ```
 
-###### 5.3.1 安卓打包
+#### 5.3 多平台打包
+
+###### 5.3.1 Android打包
+
 在发布应用的时候，需要生成一个带签名的 apk ，在安卓中生成签名有两种方式，一种利用 AndroidStudio 的可视化界面生成签名，另外一种使用jdk下的bin目录中 keytool 工具生成一个签名。本章只对命令行方式说明如何生成签名。
 1. 调出命令行，进入到安装 jdk 目录下的 bin 目录，在命令行中输入如下命令:
     ```
     keytool -genkey -v -keystore D:\work_android\ShuDanApp\ShuDanApp\shudan.keystore -alias shudan-alias -keyalg RSA -keysize 2048 -validity 10000
     ```
-    由于在 C 盘中有读写权限，因此在 keystore 后面指定生成签名的目录，然后调用此命令之后需要你输入密钥库的密码，姓名等信息，最后就生成一个 shudan.keystore 文件。
-2. 生成签名之后需要在 React Native 项目中 android 工程中配置生成的签名信息。
-    - 在 gradle.properties 文件中存放生成的签名信息。
+     keystore 后面路径为生成签名的目录，然后调用此命令之后需要你输入密钥库的密码，姓名等信息，最终会在指定的目录下生成一个 shudan.keystore 文件。
+2. 生成签名文件之后需要在 React Native 项目中 android 工程中配置生成的签名信息。
 
-        STORE_FILE:签名文件存放的目录
+    在 gradle.properties 文件中存放生成的签名信息。
 
-        KEY_ALIAS:命令行中 -alias 后面的参数也就是别名
+    STORE_FILE：签名文件存放的目录。
 
-        STORE_FILE_PASSWORD: 密钥库密码
+    KEY_ALIAS：命令行中 -alias 后面的参数也就是别名。
 
-        KEY_ALIAS_PASSWORD:别名密码
-        ```
-        STORE_FILE=../../shudan.keystore
-        KEY_ALIAS=shudan-alias
-        STORE_FILE_PASSWORD=123456
-        KEY_ALIAS_PASSWORD=123456
-        ```
+    STORE_FILE_PASSWORD： 密钥库密码。
 
-    - 在 android/app/build.gradle 中配置签名，在 android 域下添加 signingConfigs 配置，并且在 buildTypes 中的 release 域中配置 signingConfig 。然后输出 release 包时就使用 signingConfigs 下 release 配置的签名信息。
+    KEY_ALIAS_PASSWORD：别名密码。
+    ```
+    STORE_FILE=../../shudan.keystore
+    KEY_ALIAS=shudan-alias
+    STORE_FILE_PASSWORD=123456
+    KEY_ALIAS_PASSWORD=123456
+    ```
 
-        ```
-        android {
-        ....
-        signingConfigs {
-        release {
-                storeFile file(STORE_FILE)
-                storePassword STORE_FILE_PASSWORD
-                keyAlias KEY_ALIAS
-                keyPassword KEY_ALIAS_PASSWORD
-        }
-        }
-        
-        buildTypes {
-                release {
-                ...
-               signingConfig signingConfigs.release
-                    }
-               }
-        
-        }
-        ```
+    在 android/app/build.gradle 中配置签名，在 android 域下添加 signingConfigs 配置，并且在 buildTypes 中的 release 域中配置 signingConfig 。然后输出 release 的 apk 时就使用 signingConfigs 下 release 配置的签名信息，生成带有签名的 apk。
+
+    ```
+    android {
+    ....
+    signingConfigs {
+    release {
+            storeFile file(STORE_FILE)
+            storePassword STORE_FILE_PASSWORD
+            keyAlias KEY_ALIAS
+            keyPassword KEY_ALIAS_PASSWORD
+    }
+    }
+    
+    buildTypes {
+            release {
+            ...
+           signingConfig signingConfigs.release
+                }
+           }
+    
+    }
+    ```
 
 3.生成apk
 
@@ -1040,7 +1046,7 @@ DrawerView 组件：
 
 ![图5-7](https://raw.githubusercontent.com/ljingya/LearningNotes/master/Images/chapter5/7.png)
 
-###### iOS 打包
+###### 5.3.2 iOS 打包
 1. 生成 bundle 文件
 
     在项目的 ios 目录下新建 bundle 目录，然后将打包命令配置在 package.json 中，在 scripts 域下添加 budle-ios 命令，然后在项目根目录运行npm run bundle-ios,会在 ios 目录下 bundle 目录下生成离线资源。配置如下:
